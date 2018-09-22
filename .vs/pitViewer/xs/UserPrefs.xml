@@ -1,0 +1,16 @@
+﻿<Properties StartupConfiguration="{B57EDCA9-3C78-4917-AF69-E2B64BCD72D4}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="pitViewer/Form1.cs">
+    <Files>
+      <File FileName="pitViewer/Program.cs" Line="7" Column="2" />
+      <File FileName="pitViewer/Form1.cs" Line="26" Column="33" />
+      <File FileName="pitViewer/Form1.Designer.cs" Line="4" Column="6" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.pitViewer PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>
