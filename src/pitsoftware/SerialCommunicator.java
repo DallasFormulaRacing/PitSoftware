@@ -28,41 +28,68 @@ public class SerialCommunicator {
     boolean isRunning;
     
     public SerialCommunicator() throws SerialPortException {
+        
+        data = new ArrayList<>();
         String[] portList = SerialPortList.getPortNames();
         
         for(String s : portList) {
-            if(s.equals("COM2")) {
+            if(s.equals("COM5")) {
                 serial = new SerialPort(s);
+                System.out.println("started");
+
                 isRunning = true;
+                break;
             }
         }
         
-        serial.closePort();
+        
+        if(serial.isOpened())
+            serial.closePort();
         
         serial.openPort();
         
-        serial.setParams(SerialPort.BAUDRATE_256000, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+        serial.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, 1, SerialPort.PARITY_NONE);
         
         serial.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN);
         
         serial.addEventListener(new PortReader());
         
+        
     }
     
     private static class PortReader implements SerialPortEventListener {
-
+        
         @Override
         public void serialEvent(SerialPortEvent event) {
-            if(event.isRXCHAR() && event.getEventValue() > 0) {
-                String receivedData;
-                try {
-                    receivedData = serial.readString(event.getEventValue());
-                    data.add(receivedData);
-
-                } catch (SerialPortException ex) {
-                    Logger.getLogger(SerialCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+            String receivedData;
+            String corrected = "";
+            System.out.println("proc");
+            try {
+                receivedData = serial.readHexString(12);
+                
+                for(int i = 0; i < receivedData.length(); i++) {
+                    if(receivedData.charAt(i) != ' ') {
+                        corrected += receivedData.charAt(i); 
+                    }
                 }
+//                receivedData = serial.readString(event.getEventValue());
+                data.add(corrected);
+                System.out.println("raw Data: " + corrected);
+            } catch(SerialPortException ex) {
+                System.out.println(ex);
+
             }
+
+//            if(event.isRXCHAR() && event.getEventValue() > 0) {
+//                try {
+//                    receivedData = serial.readString(event.getEventValue());
+//                    data.add(receivedData);
+//                    System.out.println("Raw Data: " + receivedData);
+//
+//                } catch (SerialPortException ex) {
+//                    System.out.println(ex);
+//                }
+//            }
         }
 
     } 

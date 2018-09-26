@@ -19,10 +19,12 @@ public class MainWindow extends javax.swing.JFrame {
     Runnable parser = () -> {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         while(serialcomm.isRunning) {
+//            System.out.println(serialcomm.data.isEmpty());
             if(!serialcomm.data.isEmpty()) {
                 String fullLine = serialcomm.data.get(0);
                 serialcomm.data.remove(0);
-                String identifier = fullLine.substring(1,3);
+                String identifier = fullLine.substring(1,4);
+                System.out.println("Identifier: " + identifier);
                 switch (identifier) {
                     case "001":
                         parseGroupOne(fullLine.substring(4));
