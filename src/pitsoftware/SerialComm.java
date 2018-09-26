@@ -32,10 +32,13 @@ public class SerialComm implements Runnable, SerialPortEventListener {
         initpass = false;
         portList = CommPortIdentifier.getPortIdentifiers();
 
+        System.out.println("LoopingPortList");
+        System.out.println(portList.hasMoreElements());
         while (portList.hasMoreElements()) {
             portId = (CommPortIdentifier) portList.nextElement();
+            System.out.println(portId.getName());
             if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-                 if (portId.getName().equals("COM1")) {
+                 if (portId.getName().equals("COM2")) {
 			// if (portId.getName().equals("/dev/term/a")) {
                     workingIdentifier = portId;
                 }

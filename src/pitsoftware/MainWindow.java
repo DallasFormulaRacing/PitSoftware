@@ -6,6 +6,7 @@
 package pitsoftware;
 
 import java.util.ArrayList;
+import jssc.SerialPortException;
 
 /**
  *
@@ -13,11 +14,11 @@ import java.util.ArrayList;
  */
 public class MainWindow extends javax.swing.JFrame {
 
-    SerialComm serialcomm;
+    SerialCommunicator serialcomm;
     Thread parseThread;
     Runnable parser = () -> {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        while(serialcomm.isRunning()) {
+        while(serialcomm.isRunning) {
             if(!serialcomm.data.isEmpty()) {
                 String fullLine = serialcomm.data.get(0);
                 serialcomm.data.remove(0);
@@ -358,14 +359,13 @@ public class MainWindow extends javax.swing.JFrame {
     private void StartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StartActionPerformed
         // TODO: add your handling code here:
         logStartTime = System.currentTimeMillis();
-        serialcomm = new SerialComm(); //The thread is created and started. why call run?
-        if(serialcomm.initpass) {
-            serialcomm.run(); //?
+        try {
+        serialcomm = new SerialCommunicator(); //The thread is created and started. why call run?
+        } catch (SerialPortException e){
+            System.out.println(e);
+        }
         parseThread = new Thread(parser);
         parseThread.start();
-        } else {
-            System.out.println("Serial Port failed to start properly. Try to start again.");
-        }
         
     }//GEN-LAST:event_StartActionPerformed
 
@@ -412,14 +412,13 @@ public class MainWindow extends javax.swing.JFrame {
 
         
         rpm = Integer.parseUnsignedInt(line.substring(0, 4), 16);
-        logData.rpmLog.add(new LogObject(rpm)); // would need to be converted into SimpleLog Object since LogObject is abstract. wrong.
-        logData.add(new SimpleLogObject("RPM", rpm)); // right way of doing it
+        logData.add(new SimpleLogObject("RPM", rpm));
         tps = Integer.parseInt(line.substring(4, 4), 16) * .1;
-        logData.tpsLog.add(new LogObject(tps));
+        logData.add(new SimpleLogObject("TPS", tps)); // right way of doing it
         fuelOpenTime = Integer.parseInt((line.substring(8,4)), 16) * .1;
-        logData.fuelLog.add(new LogObject(fuelOpenTime));
+        logData.add(new SimpleLogObject("FUELOPENTIME", fuelOpenTime));
         ignAngle = Integer.parseInt((line.substring(12, 4)), 16) * .1;
-        logData.ignitionAngLog.add(new LogObject(ignAngle));
+        logData.add(new SimpleLogObject("IGNITIONANGLE", ignAngle));
         
         rpmTextField.setText(rpm + "");
         tpsTextField.setText(tps + "");
@@ -434,11 +433,11 @@ public class MainWindow extends javax.swing.JFrame {
         double barometer, map, lambda;
 
         barometer = Integer.parseInt(line.substring(0,4)) * .01;
-        logData.barometerLog.add(new LogObject(barometer));
+        logData.add(new SimpleLogObject("BAR", barometer));
         map = Integer.parseInt(line.substring(4, 4)) * .01;
-        logData.mapLog.add(new LogObject(map));
+        logData.add(new SimpleLogObject("MAP", map));
         lambda = Integer.parseInt(line.substring(8, 4)) * .01;
-        logData.lambdaLog.add(new LogObject(lambda));
+        logData.add(new SimpleLogObject("LAMBDA", lambda));
         pressureType = Integer.parseInt(line.substring(12, 1), 16);
 
 //        PressureType.Text = pressureType.ToString();
@@ -454,13 +453,13 @@ public class MainWindow extends javax.swing.JFrame {
         double input1, input2, input3, input4;
 
         input1 = Integer.parseInt(line.substring(0, 4)) * .001;
-        logData.analogInput1Log.add(new LogObject(input1));
+        logData.add(new SimpleLogObject("IN1", input1));
         input2 = Integer.parseInt(line.substring(4, 4)) * .001;
-        logData.analogInput2Log.add(new LogObject(input2));
+        logData.add(new SimpleLogObject("IN2", input2));
         input3 = Integer.parseInt(line.substring(8, 4)) * .001;
-        logData.analogInput3Log.add(new LogObject(input3));
+        logData.add(new SimpleLogObject("IN3", input3));
         input4 = Integer.parseInt(line.substring(12, 4)) * .001;
-        logData.analogInput4Log.add(new LogObject(input4));
+        logData.add(new SimpleLogObject("IN4", input4));
 
         
         analogInput1TextField.setText(input1 + "");
@@ -476,11 +475,11 @@ public class MainWindow extends javax.swing.JFrame {
         double batteryVoltage, airTemp, coolantTemp;
 
         batteryVoltage = Integer.parseInt(line.substring(0, 4)) * .01;
-        logData.batteryVoltageLog.add(new LogObject(batteryVoltage));
+        logData.add(new SimpleLogObject("BATTERY", batteryVoltage));
         airTemp = Integer.parseInt(line.substring(4, 4)) * .1;
-        logData.airTempLog.add(new LogObject(airTemp));
+        logData.add(new SimpleLogObject("AIR", airTemp));
         coolantTemp = Integer.parseInt(line.substring(8, 4)) * .1;
-        logData.coolantTempLog.add(new LogObject(coolantTemp));
+        logData.add(new SimpleLogObject("COOLANT", coolantTemp));
         tempType = Integer.parseInt(line.substring(12, 1), 16);
         
         batteryVoltageTextField.setText(batteryVoltage + "");
