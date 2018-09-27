@@ -48,7 +48,7 @@ public class SerialCommunicator {
         
         serial.openPort();
         
-        serial.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, 1, SerialPort.PARITY_NONE);
+        serial.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, 1, SerialPort.PARITY_NONE);
         
         serial.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN);
         
@@ -65,7 +65,7 @@ public class SerialCommunicator {
             String corrected = "";
             System.out.println("proc");
             try {
-                receivedData = serial.readHexString(12);
+                receivedData = serial.readHexString(10);
                 
                 for(int i = 0; i < receivedData.length(); i++) {
                     if(receivedData.charAt(i) != ' ') {
