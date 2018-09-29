@@ -27,6 +27,7 @@ public class SerialCommunicator {
     
     boolean isRunning;
     
+    
     public SerialCommunicator() throws SerialPortException {
         
         data = new ArrayList<>();
@@ -48,11 +49,12 @@ public class SerialCommunicator {
         
         serial.openPort();
         
-        serial.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, 1, SerialPort.PARITY_NONE);
+        serial.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, 0, SerialPort.PARITY_NONE);
         
         serial.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN);
         
         serial.addEventListener(new PortReader());
+        
         
         
     }
@@ -65,31 +67,27 @@ public class SerialCommunicator {
             String corrected = "";
             System.out.println("proc");
             try {
-                receivedData = serial.readHexString(10);
+//                receivedData = serial.readHexString(20);
+                receivedData = "";
+                corrected = serial.readString();
                 
-                for(int i = 0; i < receivedData.length(); i++) {
-                    if(receivedData.charAt(i) != ' ') {
-                        corrected += receivedData.charAt(i); 
+                String[] arr;
+                if(!corrected.isEmpty()){
+                    arr = corrected.split("\n");
+                    for(String s : arr) {
+                        if(s.length() == 20) {
+                            data.add(s);
+                            System.out.println(s);
+                        }
                     }
                 }
+                corrected = "";
 //                receivedData = serial.readString(event.getEventValue());
-                data.add(corrected);
-                System.out.println("raw Data: " + corrected);
+//                data.add(corrected);
             } catch(SerialPortException ex) {
                 System.out.println(ex);
 
             }
-
-//            if(event.isRXCHAR() && event.getEventValue() > 0) {
-//                try {
-//                    receivedData = serial.readString(event.getEventValue());
-//                    data.add(receivedData);
-//                    System.out.println("Raw Data: " + receivedData);
-//
-//                } catch (SerialPortException ex) {
-//                    System.out.println(ex);
-//                }
-//            }
         }
 
     } 
