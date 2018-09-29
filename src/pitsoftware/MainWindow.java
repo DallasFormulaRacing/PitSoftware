@@ -498,25 +498,26 @@ public class MainWindow extends javax.swing.JFrame {
         rpm2 = Integer.parseUnsignedInt(line.substring(2,4), 16);
         rpm = rpm1 + rpm2;
         logData.add(new SimpleLogObject("RPM", rpm));
+        
         int tps1, tps2;
         tps1 = Integer.parseInt(line.substring(4, 6), 16) * 256;
         tps2 = Integer.parseInt(line.substring(6, 8), 16);
         tps = tps1 + tps2;
         tps *= .1;
         logData.add(new SimpleLogObject("TPS", tps)); // right way of doing it
-        int fot1, fot2;
         
+        int fot1, fot2;
         fot1 = Integer.parseInt((line.substring(8,10)), 16) * 256;
         fot2 = Integer.parseInt((line.substring(10,12)), 16);
         fuelOpenTime = fot1 + fot2;
         fuelOpenTime *= .01;
         logData.add(new SimpleLogObject("FUELOPENTIME", fuelOpenTime));
+        
         int ignAngle1, ignAngle2;
         ignAngle1 = Integer.parseInt((line.substring(12, 14)), 16) * 256;
         ignAngle2 = Integer.parseInt((line.substring(14, 16)), 16);
         ignAngle = ignAngle1 + ignAngle2;
         ignAngle *= .1;
-        
         logData.add(new SimpleLogObject("IGNITIONANGLE", ignAngle));
         
         rpmTextField.setText(rpm + "");
@@ -528,18 +529,28 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void parseGroupTwo(String line)
     {
-        int pressureType;
         double barometer, map, lambda;
 
-        barometer = Integer.parseInt(line.substring(0,4), 16) * .01;
+        double barometer1, barometer2;
+        barometer1 = Integer.parseInt(line.substring(0,2), 16) * 256;
+        barometer2 = Integer.parseInt(line.substring(2,4), 16);
+        barometer = barometer1 + barometer2;
+        barometer *= 0.01;
         logData.add(new SimpleLogObject("BAR", barometer));
-        map = Integer.parseInt(line.substring(4, 8), 16) * .01;
+        
+        double map1, map2;
+        map1 = Integer.parseInt(line.substring(4,6), 16) * 256;
+        map2 = Integer.parseInt(line.substring(6,8), 16);
+        map = map1 + map2;
+        map *= 0.01;
         logData.add(new SimpleLogObject("MAP", map));
-        lambda = Integer.parseInt(line.substring(8, 12), 16) * .01;
+        
+        double lambda1, lambda2;
+        lambda1 = Integer.parseInt(line.substring(8,10), 16) * 256;
+        lambda2 = Integer.parseInt(line.substring(10,12), 16);
+        lambda = lambda1 + lambda2;
+        lambda *= 0.001;
         logData.add(new SimpleLogObject("LAMBDA", lambda));
-        pressureType = Integer.parseInt(line.substring(12, 13), 16);
-
-//        PressureType.Text = pressureType.ToString();
         
         BarometerTextField.setText(barometer + "");
         mapTextField.setText(map + "");
@@ -550,16 +561,31 @@ public class MainWindow extends javax.swing.JFrame {
     private void parseGroupThree(String line) throws NumberFormatException
     {
         double input1, input2, input3, input4;
-
-        input1 = Integer.parseInt(line.substring(0, 4), 16) * .001;
-        logData.add(new SimpleLogObject("IN1", input1));
-        input2 = Integer.parseInt(line.substring(4, 8), 16) * .001;
-        logData.add(new SimpleLogObject("IN2", input2));
-        input3 = Integer.parseInt(line.substring(8, 12), 16) * .001;
-        logData.add(new SimpleLogObject("IN3", input3));
-        input4 = Integer.parseInt(line.substring(12, 16), 16) * .001;
-        logData.add(new SimpleLogObject("IN4", input4));
-
+        double in1, in2;
+        
+        in1 = Integer.parseInt(line.substring(0,2), 16) * 256;
+        in2 = Integer.parseInt(line.substring(2,4), 16);
+        input1 = in1 + in2;
+        input1 *= 0.001;
+        logData.add(new SimpleLogObject("INPUT1", input1));
+        
+        in1 = Integer.parseInt(line.substring(4,6), 16) * 256;
+        in2 = Integer.parseInt(line.substring(6,8), 16);
+        input2 = in1 + in2;
+        input2 *= 0.001;
+        logData.add(new SimpleLogObject("INPUT2", input2));
+        
+        in1 = Integer.parseInt(line.substring(8,10), 16) * 256;
+        in2 = Integer.parseInt(line.substring(10,12), 16);
+        input3 = in1 + in2;
+        input3 *= 0.001;
+        logData.add(new SimpleLogObject("INPUT3", input3));
+        
+        in1 = Integer.parseInt(line.substring(12,14), 16) * 256;
+        in2 = Integer.parseInt(line.substring(14,16), 16);
+        input4 = in1 + in2;
+        input4 *= 0.001;
+        logData.add(new SimpleLogObject("INPUT4", input4));
         
         analogInput1TextField.setText(input1 + "");
         analogInput2TextField.setText(input2 + "");
@@ -572,14 +598,27 @@ public class MainWindow extends javax.swing.JFrame {
     {
         int tempType;
         double batteryVoltage, airTemp, coolantTemp;
-
-        batteryVoltage = Integer.parseInt(line.substring(0, 4), 16) * .01;
+        
+        double batVol1, batVol2;
+        batVol1 = Integer.parseInt(line.substring(0,2), 16) * 256;
+        batVol2 = Integer.parseInt(line.substring(2,4), 16);
+        batteryVoltage = batVol1 + batVol2;
+        batteryVoltage *= 0.01;
         logData.add(new SimpleLogObject("BATTERY", batteryVoltage));
-        airTemp = Integer.parseInt(line.substring(4, 8), 16) * .1;
+        
+        double airTemp1, airTemp2;
+        airTemp1 = Integer.parseInt(line.substring(4,6), 16) * 256;
+        airTemp2 = Integer.parseInt(line.substring(6,8), 16);
+        airTemp = airTemp1 + airTemp2;
+        airTemp *= 0.1;
         logData.add(new SimpleLogObject("AIR", airTemp));
-        coolantTemp = Integer.parseInt(line.substring(8, 12), 16) * .1;
+
+        double coolantTemp1, coolantTemp2;
+        coolantTemp1 = Integer.parseInt(line.substring(8,10), 16) * 256;
+        coolantTemp2 = Integer.parseInt(line.substring(10,12), 16);
+        coolantTemp = coolantTemp1 + coolantTemp2;
+        coolantTemp *= 0.1;
         logData.add(new SimpleLogObject("COOLANT", coolantTemp));
-        tempType = Integer.parseInt(line.substring(12, 13), 16);
         
         batteryVoltageTextField.setText(batteryVoltage + "");
         airTempTextField.setText(airTemp + "");
