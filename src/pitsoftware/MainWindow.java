@@ -5,6 +5,8 @@
  */
 package pitsoftware;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import jssc.SerialPortException;
 
@@ -14,12 +16,39 @@ import jssc.SerialPortException;
  */
 public class MainWindow extends javax.swing.JFrame {
 
+    
     SerialCommunicator serialcomm;
     Thread parseThread;
+    Runnable pyParser = () -> {
+        while(true) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                System.out.println(e);
+            }
+            try {
+                BufferedReader data = PythonComm.run();
+                String line;
+                ArrayList<String> strData = new ArrayList<>();
+                while((line = data.readLine()) != null) {
+                    strData.add(line);
+                    System.out.println(line);
+                }
+                updateUI(strData);
+            } catch(IOException e){ 
+                System.out.println(e);
+            }
+        }
+    };
     Runnable parser = () -> {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         while(serialcomm.isRunning) {
-//            System.out.println(serialcomm.data.isEmpty());
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                
+            }
+            System.out.println(serialcomm.data.isEmpty());
             if(!serialcomm.data.isEmpty()) {
                 String fullLine = serialcomm.data.get(0);
                 serialcomm.data.remove(0);
@@ -81,6 +110,63 @@ public class MainWindow extends javax.swing.JFrame {
     public MainWindow() {
         initComponents();
         logData = new ArrayList<>();
+    }
+    
+    public void updateUI(ArrayList<String> data) {
+        while(!data.isEmpty()) {
+            String fullLine = data.get(0);
+            data.remove(0);
+            if(fullLine.length() < 19)
+                continue;
+            String identifier = fullLine.substring(1,4);
+            System.out.println("Identifier: " + identifier);
+            switch (identifier) {
+                case "001":
+                    parseGroupOne(fullLine.substring(4));
+                    break;
+                case "002":
+                    parseGroupTwo(fullLine.substring(4));
+                    break;
+                case "003":
+                    parseGroupThree(fullLine.substring(4));
+                    break;
+                case "004":
+                    break;
+                case "005":
+                    break;
+                case "006":
+                    parseGroupSix(fullLine.substring(4));
+                    break;
+                case "007":
+                    break;
+                case "008":
+                    parseGroupEight(fullLine.substring(4));
+                    break;
+                case "009":
+                    break;
+                case "010":
+                    break;
+                case "011":
+                    break;
+                case "012":
+                    break;
+                case "013":
+                    break;
+                case "014":
+                    parseGroupFourteen(fullLine.substring(4));
+                    break;
+                case "015":
+                    parseGroupFifteen(fullLine.substring(4));
+                    break;
+                case "016":
+                    parseGroupSixteen(fullLine.substring(4));
+                    break;
+                case "017":
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     /**
@@ -361,12 +447,7 @@ public class MainWindow extends javax.swing.JFrame {
     private void StartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StartActionPerformed
         // TODO: add your handling code here:
         logStartTime = System.currentTimeMillis();
-        try {
-        serialcomm = new SerialCommunicator(); //The thread is created and started. why call run?
-        } catch (SerialPortException e){
-            System.out.println(e);
-        }
-        parseThread = new Thread(parser);
+        parseThread = new Thread(pyParser);
         parseThread.start();
         
     }//GEN-LAST:event_StartActionPerformed
@@ -412,14 +493,30 @@ public class MainWindow extends javax.swing.JFrame {
         int rpm;
         double tps, fuelOpenTime, ignAngle;
 
-        
-        rpm = Integer.parseUnsignedInt(line.substring(0, 4), 16);
+        int rpm1, rpm2;
+        rpm1 = Integer.parseUnsignedInt(line.substring(0, 2), 16) * 256;
+        rpm2 = Integer.parseUnsignedInt(line.substring(2,4), 16);
+        rpm = rpm1 + rpm2;
         logData.add(new SimpleLogObject("RPM", rpm));
-        tps = Integer.parseInt(line.substring(4, 4), 16) * .1;
+        int tps1, tps2;
+        tps1 = Integer.parseInt(line.substring(4, 6), 16) * 256;
+        tps2 = Integer.parseInt(line.substring(6, 8), 16);
+        tps = tps1 + tps2;
+        tps *= .1;
         logData.add(new SimpleLogObject("TPS", tps)); // right way of doing it
-        fuelOpenTime = Integer.parseInt((line.substring(8,4)), 16) * .1;
+        int fot1, fot2;
+        
+        fot1 = Integer.parseInt((line.substring(8,10)), 16) * 256;
+        fot2 = Integer.parseInt((line.substring(10,12)), 16);
+        fuelOpenTime = fot1 + fot2;
+        fuelOpenTime *= .01;
         logData.add(new SimpleLogObject("FUELOPENTIME", fuelOpenTime));
-        ignAngle = Integer.parseInt((line.substring(12, 4)), 16) * .1;
+        int ignAngle1, ignAngle2;
+        ignAngle1 = Integer.parseInt((line.substring(12, 14)), 16) * 256;
+        ignAngle2 = Integer.parseInt((line.substring(14, 16)), 16);
+        ignAngle = ignAngle1 + ignAngle2;
+        ignAngle *= .1;
+        
         logData.add(new SimpleLogObject("IGNITIONANGLE", ignAngle));
         
         rpmTextField.setText(rpm + "");
@@ -434,13 +531,13 @@ public class MainWindow extends javax.swing.JFrame {
         int pressureType;
         double barometer, map, lambda;
 
-        barometer = Integer.parseInt(line.substring(0,4)) * .01;
+        barometer = Integer.parseInt(line.substring(0,4), 16) * .01;
         logData.add(new SimpleLogObject("BAR", barometer));
-        map = Integer.parseInt(line.substring(4, 4)) * .01;
+        map = Integer.parseInt(line.substring(4, 8), 16) * .01;
         logData.add(new SimpleLogObject("MAP", map));
-        lambda = Integer.parseInt(line.substring(8, 4)) * .01;
+        lambda = Integer.parseInt(line.substring(8, 12), 16) * .01;
         logData.add(new SimpleLogObject("LAMBDA", lambda));
-        pressureType = Integer.parseInt(line.substring(12, 1), 16);
+        pressureType = Integer.parseInt(line.substring(12, 13), 16);
 
 //        PressureType.Text = pressureType.ToString();
         
@@ -450,17 +547,17 @@ public class MainWindow extends javax.swing.JFrame {
         
     }
 
-    private void parseGroupThree(String line)
+    private void parseGroupThree(String line) throws NumberFormatException
     {
         double input1, input2, input3, input4;
 
-        input1 = Integer.parseInt(line.substring(0, 4)) * .001;
+        input1 = Integer.parseInt(line.substring(0, 4), 16) * .001;
         logData.add(new SimpleLogObject("IN1", input1));
-        input2 = Integer.parseInt(line.substring(4, 4)) * .001;
+        input2 = Integer.parseInt(line.substring(4, 8), 16) * .001;
         logData.add(new SimpleLogObject("IN2", input2));
-        input3 = Integer.parseInt(line.substring(8, 4)) * .001;
+        input3 = Integer.parseInt(line.substring(8, 12), 16) * .001;
         logData.add(new SimpleLogObject("IN3", input3));
-        input4 = Integer.parseInt(line.substring(12, 4)) * .001;
+        input4 = Integer.parseInt(line.substring(12, 16), 16) * .001;
         logData.add(new SimpleLogObject("IN4", input4));
 
         
@@ -476,13 +573,13 @@ public class MainWindow extends javax.swing.JFrame {
         int tempType;
         double batteryVoltage, airTemp, coolantTemp;
 
-        batteryVoltage = Integer.parseInt(line.substring(0, 4)) * .01;
+        batteryVoltage = Integer.parseInt(line.substring(0, 4), 16) * .01;
         logData.add(new SimpleLogObject("BATTERY", batteryVoltage));
-        airTemp = Integer.parseInt(line.substring(4, 4)) * .1;
+        airTemp = Integer.parseInt(line.substring(4, 8), 16) * .1;
         logData.add(new SimpleLogObject("AIR", airTemp));
-        coolantTemp = Integer.parseInt(line.substring(8, 4)) * .1;
+        coolantTemp = Integer.parseInt(line.substring(8, 12), 16) * .1;
         logData.add(new SimpleLogObject("COOLANT", coolantTemp));
-        tempType = Integer.parseInt(line.substring(12, 1), 16);
+        tempType = Integer.parseInt(line.substring(12, 13), 16);
         
         batteryVoltageTextField.setText(batteryVoltage + "");
         airTempTextField.setText(airTemp + "");
