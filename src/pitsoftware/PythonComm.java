@@ -17,6 +17,8 @@ public class PythonComm {
     
     public static BufferedReader run() throws IOException {
         
+        System.out.println("start");
+        
         Process process = Runtime.getRuntime().exec("python /Users/aribdhuka/Documents/FSAE/PitSoftware/serialdata.py");
         
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
