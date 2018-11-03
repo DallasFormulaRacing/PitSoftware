@@ -6,7 +6,10 @@
 package pitsoftware;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import jssc.SerialPortException;
@@ -103,6 +106,10 @@ public class MainWindow extends javax.swing.JFrame {
     CategoricalHashMap logData;
     //list of all the windows open
     ArrayList<LiveChart> graphList;
+    //list of all tags we have entered into the categoricalhashmap
+    static String[] tags = new String[] {"Time,RPM", "Time,TPS", "Time,FuelOpenTime", 
+        "Time,IgnitionAngle", "Time,Barometer", "Time,MAP", "Time,Lambda", "Time,Input1",
+        "Time,Input2", "Time,Input3", "Time,Input4", "Time,Voltage", "Time,Air", "Time,Coolant"};
     
     //Constructor for this class
     public MainWindow() {
@@ -659,6 +666,48 @@ public class MainWindow extends javax.swing.JFrame {
     {
 
     }
+    
+    public void hashMapToCSV()
+    {
+        try {
+            // Creates a new csv file to put data into. File is located within 'PitSoftware' git folder
+            FileOutputStream csv = new FileOutputStream(new File("sample.csv"), true);
+            // Allows program to print/write data into file
+            PrintWriter pw = new PrintWriter(csv);
+            
+            // Loop continues based on total number of tags in array 'tags' from importCSV
+            for (int i = 0; i < tags.length; i++){
+                // Gets tag for dataset from array 'tags' in importCSV
+                String tag = tags[i];
+                // Creates array of SimpleLogObject that only includes data from 'dataMap' under 'tag'
+                ArrayList<SimpleLogObject> data = new ArrayList(logData.getList(tag));
+                if(!data.isEmpty()) {
+                    // Prints 'tag' before data is printed if data is not empty
+                    pw.println(tag);
+                
+                    // Loop that prints data under 'tag' on separate lines
+                    for (int x = 0; x < data.size(); x++){
+                        // Allows for data to be split by comma for placement in csv 
+                        final String DELIMITER = ",";
+                        // Splits data by commas to be printed into csv file
+                        String[] obj = ((data.get(x)).toString()).split(DELIMITER);
+                        // Prints each piece of data to a unique cell on one line
+                        pw.println(obj[0] + "," + obj[1]);
+                        // Sends single data line to print in file
+                        pw.flush();
+                    }
+                    //print end tag
+                    pw.println("END\n");
+                
+                }
+            }
+            
+            System.out.println ("File sample.csv has been created" );
+            
+        } catch (IOException x) {
+            System.out.println(x);
+        }
+    } 
     
     /**
      * @param args the command line arguments

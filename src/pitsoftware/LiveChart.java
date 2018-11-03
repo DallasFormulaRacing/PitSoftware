@@ -124,7 +124,7 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
         );
         chartFrameLayout.setVerticalGroup(
             chartFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 254, Short.MAX_VALUE)
+            .addGap(0, 277, Short.MAX_VALUE)
         );
 
         xCordLabel.setText("jLabel2");
