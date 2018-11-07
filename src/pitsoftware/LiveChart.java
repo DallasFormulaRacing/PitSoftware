@@ -79,6 +79,16 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
         //make sure the size is correct
         chartPanel.setPreferredSize(new java.awt.Dimension(400, 300));
         
+        // make the charts not scrunch up, althought the bounding value probably needs to be adjusted
+        XYPlot xyPlot = chart.getXYPlot();
+        
+        ValueAxis domainAxis = xyPlot.getDomainAxis();
+        domainAxis.setAutoRange(true);
+        domainAxis.setFixedAutoRange(30); // 30 seconds of data at a time
+        
+        ValueAxis rangeAxis = xyPlot.getRangeAxis();
+        rangeAxis.setAutoRange(true);
+        
         //add the mouse listener
         chartPanel.addChartMouseListener(this);
         
