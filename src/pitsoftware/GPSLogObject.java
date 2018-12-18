@@ -40,4 +40,8 @@ public class GPSLogObject extends LogObject {
     public double distanceTo(double lat, double longi) {
         throw new UnsupportedOperationException("Not Supported Yet."); //TODO Implement distance calculation off of two coordinates in decimal form.
     }
+    
+    public String toString() {
+        return "(" + time + "," + lat + "," + longi + ")";
+    }
 }
