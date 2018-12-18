@@ -9,7 +9,7 @@ package pitsoftware;
  *
  * @author aribdhuka
  */
-public abstract class LogObject implements Comparable {
+public abstract class LogObject implements Comparable, CategoricalHashTableInterface {
     protected long time;
     protected String TAG;
     
@@ -32,6 +32,14 @@ public abstract class LogObject implements Comparable {
 
     public void setTAG(String TAG) {
         this.TAG = TAG;
+    }
+    
+    public String hashTag() {
+        return TAG;
+    }
+    
+    public String toString() {
+        return TAG;
     }
 
     
