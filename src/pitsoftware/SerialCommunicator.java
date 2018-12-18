@@ -51,11 +51,7 @@ public class SerialCommunicator {
         
         serial.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, 0, SerialPort.PARITY_NONE);
         
-        serial.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN);
-        
         serial.addEventListener(new PortReader());
-        
-        
         
     }
     
