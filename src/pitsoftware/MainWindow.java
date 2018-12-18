@@ -5,14 +5,21 @@
  */
 package pitsoftware;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
-import jssc.SerialPortException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
@@ -43,6 +50,9 @@ public class MainWindow extends javax.swing.JFrame {
             try {
                 //get the BufferedReader from the run command from the class that runs the python code
                 BufferedReader data = PythonComm.run();
+                //ensure BufferedReader is not null
+                if(data == null)
+                    continue;
                 //holds the current line of data
                 String line;
                 //list of hexstrings
@@ -60,29 +70,61 @@ public class MainWindow extends javax.swing.JFrame {
                 System.out.println(e);
             }
         }
-    };    
+    };   
     
-    //This thread is for adding objects to the CategoricalHashMap continuously as well as updating the new window charts
-    Thread testingThread;
-    //Runnable code for the Testing code
-    Runnable testingRunner = new Runnable() {
+    Runnable fileParser = new Runnable() {
         @Override
         public void run() {
-            //current "time"
-            int i = 0;
+            //try to createa a buffered input with the given file
+            BufferedInputStream reader = null;
+            try {
+                String filepath = pyFilepath.substring(0, pyFilepath.lastIndexOf("/") + 1) + "data.txt";
+                reader = new BufferedInputStream(new FileInputStream(new File(filepath)));
+            } catch (FileNotFoundException e) {
+                System.out.println(e.getMessage());
+            }
+            
+            //if reader failed
+            if(reader == null) {
+                new MessageBox("Couldn't find file!").setVisible(true);
+                return;
+            }
+            
+            //current item
+            String curr = "";
+            
             while(true) {
-                //create LogObject
-                SimpleLogObject slo = new SimpleLogObject("Time,RPM", (i*1000)%14000);
-                //set its time to the fake time value we created
-                slo.setTime(i);
-                //put the data in the CategoricalHashMap
-                logData.put(slo);
-                //try to sleep for a second
                 try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    System.out.println(e);
+                    int avail = reader.available();
+                    if(avail > 0) {
+                        char c = (char) reader.read();
+                        if(c == '\n') {
+                            updateUI(curr);
+                            curr = "";
+                        } else {
+                            curr += c;
+                        }
+                    } else {
+                        try {
+                            Thread.sleep(50);
+                        } catch(InterruptedException e) {
+                            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, e);
+                        }
+                    }
+                } catch (IOException e) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, e);
                 }
+            }
+        }
+    };
+    
+    //This thread is for adding objects to the CategoricalHashMap continuously as well as updating the new window charts
+    Thread graphThread;
+    //Runnable code for the Testing code
+    Runnable graphRunner = new Runnable() {
+        @Override
+        public void run() {
+            while(true) {
                 //if the graphList isnt empty (A window is open)
                 if(!graphList.isEmpty()) {
                     //for each LiveChart window
@@ -90,104 +132,116 @@ public class MainWindow extends javax.swing.JFrame {
                         //if c is still open
                         if(c.isActive()) {
                             //update its chart
-                            c.updateChart(createJFreeChart("Time,RPM"));
+                            c.updateChart(createJFreeChart(c.getTag()));
                         }
                     }
+                } else {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
-                //increment the time
-                i++;
             }
         }
     };
     
+    //holds the python filepath
+    static String pyFilepath;
+    //Process that is running the python script
+    Process pyScript;
     //holds the start time of the program
     static long logStartTime = 0;
     //HashMap of all the values we receive
-    CategoricalHashMap logData;
+    CategoricalHashTable<LogObject> logData;
     //list of all the windows open
     ArrayList<LiveChart> graphList;
-    //list of all tags we have entered into the categoricalhashmap
-    static String[] tags = new String[] {"Time,RPM", "Time,TPS", "Time,FuelOpenTime", 
-        "Time,IgnitionAngle", "Time,Barometer", "Time,MAP", "Time,Lambda", "Time,Input1",
-        "Time,Input2", "Time,Input3", "Time,Input4", "Time,Voltage", "Time,Air", "Time,Coolant"};
+    //holds if running
+    boolean isRunning;
     
     //Constructor for this class
     public MainWindow() {
+        //start off not running
+        isRunning = false;
         //create its components
         initComponents();
         //initiate the hashmap
-        logData = new CategoricalHashMap();
+        logData = new CategoricalHashTable<>();
         //initiate the list of windows
         graphList = new ArrayList<>();
         //launch the thread that adds sample data.
-        testingThread = new Thread(testingRunner);
-        testingThread.start();
+        graphThread = new Thread(graphRunner);
+        graphThread.start();
+        pyFilepath = "";
     }
     
     //update the UI from a list of data
     public void updateUI(ArrayList<String> data) {
-        //while the list has data
-        while(!data.isEmpty()) {
-            //get the first element
-            String fullLine = data.get(0);
-            //remove the element from the list
-            data.remove(0);
-            //if the length of the line is not the right size skip the value
-            if(fullLine.length() != 20)
-                continue;
-            //get the identifier of the data value
-            String identifier = fullLine.substring(1,4);
-            //switch on the identifier
-            switch (identifier) {
-                //group one is RPM, TPS, fuelopentime, ignition angle
-                case "001":
-                    parseGroupOne(fullLine.substring(4));
-                    break;
-                //group two is barometer, MAP, and lambda
-                case "002":
-                    parseGroupTwo(fullLine.substring(4));
-                    break;
-                //group three contains the analog inputs
-                case "003":
-                    parseGroupThree(fullLine.substring(4));
-                    break;
-                case "004":
-                    break;
-                case "005":
-                    break;
-                //group six contains battery voltage, ambient temperature, and coolant temperature
-                case "006":
-                    parseGroupSix(fullLine.substring(4));
-                    break;
-                case "007":
-                    break;
-                case "008":
-                    parseGroupEight(fullLine.substring(4));
-                    break;
-                case "009":
-                    break;
-                case "010":
-                    break;
-                case "011":
-                    break;
-                case "012":
-                    break;
-                case "013":
-                    break;
-                case "014":
-                    parseGroupFourteen(fullLine.substring(4));
-                    break;
-                case "015":
-                    parseGroupFifteen(fullLine.substring(4));
-                    break;
-                case "016":
-                    parseGroupSixteen(fullLine.substring(4));
-                    break;
-                case "017":
-                    break;
-                default:
-                    break;
-            }
+        //for each string, update the UI.
+        for(String str : data) {
+            updateUI(str);
+        }
+    }
+    
+    public void updateUI(String data) {
+        //if the length of the line is not the right size skip the value
+        if(data.length() != 20) {
+            System.out.println("Invalid CAN String!");
+            return;
+        }
+        //get the identifier of the data value
+        String identifier = data.substring(1,4);
+        //switch on the identifier
+        switch (identifier) {
+            //group one is RPM, TPS, fuelopentime, ignition angle
+            case "001":
+                parseGroupOne(data.substring(4));
+                break;
+            //group two is barometer, MAP, and lambda
+            case "002":
+                parseGroupTwo(data.substring(4));
+                break;
+            //group three contains the analog inputs
+            case "003":
+                parseGroupThree(data.substring(4));
+                break;
+            case "004":
+                break;
+            case "005":
+                break;
+            //group six contains battery voltage, ambient temperature, and coolant temperature
+            case "006":
+                parseGroupSix(data.substring(4));
+                break;
+            case "007":
+                break;
+            case "008":
+                parseGroupEight(data.substring(4));
+                break;
+            case "009":
+                break;
+            case "010":
+                break;
+            case "011":
+                break;
+            case "012":
+                break;
+            case "013":
+                break;
+            case "014":
+                parseGroupFourteen(data.substring(4));
+                break;
+            case "015":
+                parseGroupFifteen(data.substring(4));
+                break;
+            case "016":
+                parseGroupSixteen(data.substring(4));
+                break;
+            case "017":
+                break;
+            default:
+                System.out.println("Parse fail");
+                break;
         }
     }
 
@@ -200,6 +254,7 @@ public class MainWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        fileChooser = new javax.swing.JFileChooser();
         jLabel1 = new javax.swing.JLabel();
         rpmTextField = new javax.swing.JTextField();
         tpsTextField = new javax.swing.JTextField();
@@ -228,7 +283,11 @@ public class MainWindow extends javax.swing.JFrame {
         BarometerTextField = new javax.swing.JTextField();
         mapTextField = new javax.swing.JTextField();
         lambdaTextField = new javax.swing.JTextField();
-        Start = new javax.swing.JButton();
+        startButton = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        findPythonFileMenuItem = new javax.swing.JMenuItem();
+        exportDataMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -242,6 +301,11 @@ public class MainWindow extends javax.swing.JFrame {
         });
 
         tpsTextField.setEditable(false);
+        tpsTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tpsTextFieldActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("TPS %");
 
@@ -293,13 +357,35 @@ public class MainWindow extends javax.swing.JFrame {
 
         lambdaTextField.setEditable(false);
 
-        Start.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
-        Start.setText("START THIS BITCH!");
-        Start.addActionListener(new java.awt.event.ActionListener() {
+        startButton.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
+        startButton.setText("START THIS BITCH!");
+        startButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                StartActionPerformed(evt);
+                startButtonActionPerformed(evt);
             }
         });
+
+        jMenu1.setText("File");
+
+        findPythonFileMenuItem.setText("Find Python File");
+        findPythonFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findPythonFileMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(findPythonFileMenuItem);
+
+        exportDataMenuItem.setText("Export Data");
+        exportDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportDataMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(exportDataMenuItem);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -365,7 +451,7 @@ public class MainWindow extends javax.swing.JFrame {
                                     .addComponent(jLabel14)
                                     .addComponent(jLabel15)))))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(Start, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(startButton, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(107, 107, 107)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -431,7 +517,7 @@ public class MainWindow extends javax.swing.JFrame {
                             .addComponent(lambdaTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel15))))
                 .addGap(36, 36, 36)
-                .addComponent(Start, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(startButton, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -439,13 +525,31 @@ public class MainWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     //on start button pressed
-    private void StartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StartActionPerformed
-        // TODO add your handling code here:
-        logStartTime = System.currentTimeMillis();
-        parseThread = new Thread(pyParser);
-        parseThread.start();
+    private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
+        isRunning = !isRunning;
+        if(isRunning) {
+            try {
+                //start python script
+                pyScript = Runtime.getRuntime().exec("python " + pyFilepath);
+                Thread.sleep(250);
+            } catch (IOException ex) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            startButton.setText("STOP THIS BITCH!"); 
+            logStartTime = System.currentTimeMillis();
+            parseThread = new Thread(fileParser);
+            parseThread.start();
+        }
+        else {
+            startButton.setText("START THIS BITCH!");
+            pyScript.destroy();
+            if(parseThread.isAlive())
+                parseThread.interrupt();
+        }
         
-    }//GEN-LAST:event_StartActionPerformed
+    }//GEN-LAST:event_startButtonActionPerformed
 
     //when the field is clicked
     private void rpmTextFieldMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rpmTextFieldMouseClicked
@@ -453,12 +557,61 @@ public class MainWindow extends javax.swing.JFrame {
         showJFreeChart("Time,RPM");
     }//GEN-LAST:event_rpmTextFieldMouseClicked
 
+    private void findPythonFileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPythonFileMenuItemActionPerformed
+        // TODO add your handling code here:
+        //open file for vehicleData
+        // Open a separate dialog to select a .csv file
+        fileChooser = new JFileChooser() {
+
+            // Override approveSelection method because we only want to approve
+            //  the selection if its is a .csv file.
+            @Override
+            public void approveSelection() {
+                File chosenFile = getSelectedFile();
+
+                // Make sure that the chosen file exists
+                if (chosenFile.exists()) {
+                    // Get the file extension to make sure it is .csv
+                    String filePath = chosenFile.getAbsolutePath();
+                    int lastIndex = filePath.lastIndexOf(".");
+                    String fileExtension = filePath.substring(lastIndex,
+                        filePath.length());
+
+                    // approve selection if it is a .csv file
+                    if (fileExtension.equals(".py")) {
+                        super.approveSelection();
+                    } else {
+                        // do nothing - that selection should not be approved
+                    }
+
+                }
+            }
+        };
+
+        // showOpenDialog returns the chosen option and if it as an approve
+        //  option then the file should be imported and opened
+        int choice = fileChooser.showOpenDialog(null);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            pyFilepath = fileChooser.getSelectedFile().getAbsolutePath();
+        }
+    }//GEN-LAST:event_findPythonFileMenuItemActionPerformed
+
+    //Exports data that we have logged into a CSV file
+    private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDataMenuItemActionPerformed
+        //Call the method to export
+        hashTableToCSV();
+    }//GEN-LAST:event_exportDataMenuItemActionPerformed
+
+    private void tpsTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tpsTextFieldActionPerformed
+        showJFreeChart("Time,TPS");
+    }//GEN-LAST:event_tpsTextFieldActionPerformed
+
     //create the JFree Chart and show it
     private void showJFreeChart(String TAG) {
         //get the chart object from another method call
         JFreeChart chart = createJFreeChart(TAG);
         //create a new window that has the chart.
-        LiveChart liveChart = new LiveChart(chart);
+        LiveChart liveChart = new LiveChart(chart, TAG);
         //add the chart to the list of windows
         graphList.add(liveChart);
         //show the window
@@ -667,32 +820,30 @@ public class MainWindow extends javax.swing.JFrame {
 
     }
     
-    public void hashMapToCSV()
+    public void hashTableToCSV()
     {
         try {
+            //get todays date
+            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");  
+            Date date = new Date();
+            String now = formatter.format(date);
             // Creates a new csv file to put data into. File is located within 'PitSoftware' git folder
-            FileOutputStream csv = new FileOutputStream(new File("sample.csv"), true);
+            FileOutputStream csv = new FileOutputStream(new File(now + ".csv"), true);
             // Allows program to print/write data into file
             PrintWriter pw = new PrintWriter(csv);
             
             // Loop continues based on total number of tags in array 'tags' from importCSV
-            for (int i = 0; i < tags.length; i++){
-                // Gets tag for dataset from array 'tags' in importCSV
-                String tag = tags[i];
+            for (String tag : logData.getTags()) {
                 // Creates array of SimpleLogObject that only includes data from 'dataMap' under 'tag'
-                ArrayList<SimpleLogObject> data = new ArrayList(logData.getList(tag));
+                LinkedList<LogObject> data = logData.getList(tag);
                 if(!data.isEmpty()) {
                     // Prints 'tag' before data is printed if data is not empty
                     pw.println(tag);
                 
                     // Loop that prints data under 'tag' on separate lines
-                    for (int x = 0; x < data.size(); x++){
-                        // Allows for data to be split by comma for placement in csv 
-                        final String DELIMITER = ",";
-                        // Splits data by commas to be printed into csv file
-                        String[] obj = ((data.get(x)).toString()).split(DELIMITER);
+                    for (LogObject lo : data) {
                         // Prints each piece of data to a unique cell on one line
-                        pw.println(obj[0] + "," + obj[1]);
+                        pw.println(lo.toString());
                         // Sends single data line to print in file
                         pw.flush();
                     }
@@ -746,7 +897,6 @@ public class MainWindow extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField BarometerTextField;
-    private javax.swing.JButton Start;
     private javax.swing.JTextField airTempTextField;
     private javax.swing.JTextField analogInput1TextField;
     private javax.swing.JTextField analogInput2TextField;
@@ -754,6 +904,9 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JTextField analogInput4TextField;
     private javax.swing.JTextField batteryVoltageTextField;
     private javax.swing.JTextField coolantTempTextField;
+    private javax.swing.JMenuItem exportDataMenuItem;
+    private javax.swing.JFileChooser fileChooser;
+    private javax.swing.JMenuItem findPythonFileMenuItem;
     private javax.swing.JTextField fuelTimingTextField;
     private javax.swing.JTextField ignitionAngleTextField;
     private javax.swing.JLabel jLabel1;
@@ -770,9 +923,12 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JTextField lambdaTextField;
     private javax.swing.JTextField mapTextField;
     private javax.swing.JTextField rpmTextField;
+    private javax.swing.JButton startButton;
     private javax.swing.JTextField tpsTextField;
     // End of variables declaration//GEN-END:variables
 }

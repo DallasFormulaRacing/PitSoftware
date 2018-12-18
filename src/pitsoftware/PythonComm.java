@@ -19,16 +19,23 @@ public class PythonComm {
         
         System.out.println("start");
         
-        Process process = Runtime.getRuntime().exec("python /Users/aribdhuka/Documents/FSAE/PitSoftware/serialdata.py");
+        String filepath = MainWindow.pyFilepath;
         
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        BufferedReader errors = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        if(!filepath.isEmpty()) {
         
-        String line;
-        while((line = errors.readLine()) != null) {
-            System.out.println("Error: " + line);
+            Process process = Runtime.getRuntime().exec("python " + filepath);
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader errors = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+            String line;
+            while((line = errors.readLine()) != null) {
+                System.out.println("Error: " + line);
+            }
+
+            return reader;
         }
         
-        return reader;
+        return null;
     }
 }
