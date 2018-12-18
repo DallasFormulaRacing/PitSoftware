@@ -41,16 +41,23 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
     
     //List of value markers
     ArrayList<ValueMarker> staticValueMarkers;
+    
+    //holds the tag for this chart
+    private String TAG;
     /**
      * Creates new form LiveChart
+     * @param chart chart to show
+     * @param TAG data set for this chart
      */
-    public LiveChart(final JFreeChart chart) {
+    public LiveChart(final JFreeChart chart, String TAG) {
         //create the GUI
         initComponents();
         
+        //save this charts tag
+        this.TAG = TAG;
+        
         //init the valuemarker list
         staticValueMarkers = new ArrayList<>();
-        
         
         //close only this window when closed
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -94,6 +101,10 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
         
         //add the panels contents to the frame
         chartFrame.setContentPane(chartPanel);
+        
+        for(ValueMarker v : staticValueMarkers) {
+            chart.getXYPlot().addDomainMarker(v);
+        }
     }
 
     /**
@@ -229,7 +240,7 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new LiveChart(null).setVisible(true);
+                new LiveChart(null, null).setVisible(true);
             }
         });
     }
@@ -331,4 +342,13 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
         this.xCrosshair.setValue(xCor);
         this.yCrosshair.setValue(yCor);
     }
+    
+    public String getTag() {
+        return TAG;
+    }
+    
+    public void setTag(String TAG) {
+        this.TAG = TAG;
+    }
+    
 }
