@@ -32,4 +32,8 @@ public class SimpleLogObject extends LogObject {
         this.value = value;
     }
     
+    public String toString() {
+        return time + "," + value;
+    }
+    
 }
