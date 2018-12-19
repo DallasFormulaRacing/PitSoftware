@@ -5,6 +5,8 @@
  */
 package pitsoftware;
 
+import com.arib.categoricalhashtable.CategoricalHashTableInterface;
+
 /**
  *
  * @author aribdhuka
