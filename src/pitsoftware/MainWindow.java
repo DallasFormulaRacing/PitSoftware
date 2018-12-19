@@ -40,16 +40,20 @@ public class MainWindow extends javax.swing.JFrame {
     //Runnable code for the parseThread
     Runnable pyParser = () -> {
         while(true) {
-            //sleep for 500 ms
+            //sleep for 100 ms
+            //this is so that we are not forcing python to close and reopen a serial connection.
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 System.out.println(e);
             }
+            long beforeTime = System.currentTimeMillis();
             //try to run the Python Communicator
             try {
                 //get the BufferedReader from the run command from the class that runs the python code
                 BufferedReader data = PythonComm.run();
+                //print time it took to get data.
+                System.out.println("Time elapsed: + " + (System.currentTimeMillis() - beforeTime));
                 //ensure BufferedReader is not null
                 if(data == null)
                     continue;
