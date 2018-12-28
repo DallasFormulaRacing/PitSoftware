@@ -140,6 +140,11 @@ public class MainWindow extends javax.swing.JFrame {
                             c.updateChart(createJFreeChart(c.getTag()));
                         }
                     }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 } else {
                     try {
                         Thread.sleep(1000);
@@ -306,23 +311,48 @@ public class MainWindow extends javax.swing.JFrame {
         });
 
         tpsTextField.setEditable(false);
-        tpsTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tpsTextFieldActionPerformed(evt);
+        tpsTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                tpsTextFieldMouseReleased(evt);
             }
         });
 
         jLabel2.setText("TPS %");
 
         fuelTimingTextField.setEditable(false);
+        fuelTimingTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                fuelTimingTextFieldMouseReleased(evt);
+            }
+        });
 
         ignitionAngleTextField.setEditable(false);
+        ignitionAngleTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                ignitionAngleTextFieldMouseReleased(evt);
+            }
+        });
 
         batteryVoltageTextField.setEditable(false);
+        batteryVoltageTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                batteryVoltageTextFieldMouseReleased(evt);
+            }
+        });
 
         airTempTextField.setEditable(false);
+        airTempTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                airTempTextFieldMouseReleased(evt);
+            }
+        });
 
         coolantTempTextField.setEditable(false);
+        coolantTempTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                coolantTempTextFieldMouseReleased(evt);
+            }
+        });
 
         jLabel5.setText("Fuel Open Time (ms)");
 
@@ -347,20 +377,55 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel3.setText("Analog Input #1");
 
         analogInput1TextField.setEditable(false);
+        analogInput1TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                analogInput1TextFieldMouseReleased(evt);
+            }
+        });
 
         analogInput2TextField.setEditable(false);
+        analogInput2TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                analogInput2TextFieldMouseReleased(evt);
+            }
+        });
 
         jLabel4.setText("Analog Input #2");
 
         analogInput3TextField.setEditable(false);
+        analogInput3TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                analogInput3TextFieldMouseReleased(evt);
+            }
+        });
 
         analogInput4TextField.setEditable(false);
+        analogInput4TextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                analogInput4TextFieldMouseReleased(evt);
+            }
+        });
 
         BarometerTextField.setEditable(false);
+        BarometerTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                BarometerTextFieldMouseReleased(evt);
+            }
+        });
 
         mapTextField.setEditable(false);
+        mapTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                mapTextFieldMouseReleased(evt);
+            }
+        });
 
         lambdaTextField.setEditable(false);
+        lambdaTextField.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                lambdaTextFieldMouseReleased(evt);
+            }
+        });
 
         startButton.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
         startButton.setText("START THIS BITCH!");
@@ -607,14 +672,64 @@ public class MainWindow extends javax.swing.JFrame {
         hashTableToCSV();
     }//GEN-LAST:event_exportDataMenuItemActionPerformed
 
-    private void tpsTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tpsTextFieldActionPerformed
+    private void tpsTextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tpsTextFieldMouseReleased
         showJFreeChart("Time,TPS");
-    }//GEN-LAST:event_tpsTextFieldActionPerformed
+    }//GEN-LAST:event_tpsTextFieldMouseReleased
+
+    private void fuelTimingTextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fuelTimingTextFieldMouseReleased
+        showJFreeChart("Time,FuelOpenTime");
+    }//GEN-LAST:event_fuelTimingTextFieldMouseReleased
+
+    private void ignitionAngleTextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ignitionAngleTextFieldMouseReleased
+        showJFreeChart("Time,IgnitionAngle");      
+    }//GEN-LAST:event_ignitionAngleTextFieldMouseReleased
+
+    private void batteryVoltageTextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_batteryVoltageTextFieldMouseReleased
+        showJFreeChart("Time,Voltage");
+    }//GEN-LAST:event_batteryVoltageTextFieldMouseReleased
+
+    private void airTempTextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_airTempTextFieldMouseReleased
+        showJFreeChart("Time,Air");
+    }//GEN-LAST:event_airTempTextFieldMouseReleased
+
+    private void coolantTempTextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_coolantTempTextFieldMouseReleased
+        showJFreeChart("Time,Coolant");
+    }//GEN-LAST:event_coolantTempTextFieldMouseReleased
+
+    private void analogInput1TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_analogInput1TextFieldMouseReleased
+        showJFreeChart("Time,Input1");
+    }//GEN-LAST:event_analogInput1TextFieldMouseReleased
+
+    private void analogInput2TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_analogInput2TextFieldMouseReleased
+        showJFreeChart("Time,Input2");
+    }//GEN-LAST:event_analogInput2TextFieldMouseReleased
+
+    private void analogInput3TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_analogInput3TextFieldMouseReleased
+        showJFreeChart("Time,Input3");
+    }//GEN-LAST:event_analogInput3TextFieldMouseReleased
+
+    private void analogInput4TextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_analogInput4TextFieldMouseReleased
+        showJFreeChart("Time,Input4");
+    }//GEN-LAST:event_analogInput4TextFieldMouseReleased
+
+    private void BarometerTextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_BarometerTextFieldMouseReleased
+        showJFreeChart("Time,Barometer");
+    }//GEN-LAST:event_BarometerTextFieldMouseReleased
+
+    private void mapTextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapTextFieldMouseReleased
+        showJFreeChart("Time,MAP");
+    }//GEN-LAST:event_mapTextFieldMouseReleased
+
+    private void lambdaTextFieldMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lambdaTextFieldMouseReleased
+        showJFreeChart("Time,Lambda");
+    }//GEN-LAST:event_lambdaTextFieldMouseReleased
 
     //create the JFree Chart and show it
     private void showJFreeChart(String TAG) {
         //get the chart object from another method call
         JFreeChart chart = createJFreeChart(TAG);
+        if(chart == null)
+            return;
         //create a new window that has the chart.
         LiveChart liveChart = new LiveChart(chart, TAG);
         //add the chart to the list of windows
@@ -632,13 +747,16 @@ public class MainWindow extends javax.swing.JFrame {
         XYSeries series = new XYSeries(TAG);
         //get the list of values that have our tag from the HashMap
         LinkedList<LogObject> dataList = logData.getList(TAG);
-        //for each LogObject in the list
-        for(LogObject lo : dataList) {
-            //if the LogObject is an instance of SimpleLogObject
-            //setting up for different data types such as GPS log object
-            if(lo instanceof SimpleLogObject) {
-                //add the log object to the series
-                series.add(lo.getTime(), ((SimpleLogObject) lo).getValue());
+        //if we have data
+        if(dataList != null) {
+            //for each LogObject in the list
+            for(LogObject lo : dataList) {
+                //if the LogObject is an instance of SimpleLogObject
+                //setting up for different data types such as GPS log object
+                if(lo instanceof SimpleLogObject) {
+                    //add the log object to the series
+                    series.add(lo.getTime(), ((SimpleLogObject) lo).getValue());
+                }
             }
         }
         

@@ -246,7 +246,7 @@
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tpsTextFieldActionPerformed"/>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="tpsTextFieldMouseReleased"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
@@ -258,26 +258,41 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="fuelTimingTextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="ignitionAngleTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="ignitionAngleTextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="batteryVoltageTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="batteryVoltageTextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="airTempTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="airTempTextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="coolantTempTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="coolantTempTextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
       <Properties>
@@ -338,11 +353,17 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="analogInput1TextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="analogInput2TextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="analogInput2TextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel4">
       <Properties>
@@ -353,26 +374,41 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="analogInput3TextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="analogInput4TextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="analogInput4TextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="BarometerTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="BarometerTextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="mapTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="mapTextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="lambdaTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lambdaTextFieldMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="startButton">
       <Properties>
