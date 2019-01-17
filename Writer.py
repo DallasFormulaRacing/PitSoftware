@@ -1,7 +1,6 @@
 import time
 import os
 import sys
-sys.path.append("/anaconda3/lib/python3.6/site-packages")
 import serial
 import time
 
