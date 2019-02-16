@@ -6,6 +6,7 @@
 package pitsoftware;
 
 import com.arib.categoricalhashtable.CategoricalHashTable;
+import com.arib.toast.Toast;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -250,7 +251,7 @@ public class MainWindow extends javax.swing.JFrame {
             case "017":
                 break;
             default:
-                System.out.println("Parse fail");
+                Toast.makeToast(this, "Parse fail", Toast.DURATION_SHORT);
                 break;
         }
     }
@@ -596,27 +597,44 @@ public class MainWindow extends javax.swing.JFrame {
 
     //on start button pressed
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-        isRunning = !isRunning;
-        if(isRunning) {
-            try {
-                //start python script
-                pyScript = Runtime.getRuntime().exec("python " + pyFilepath);
-                Thread.sleep(250);
-            } catch (IOException ex) {
-                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            startButton.setText("STOP THIS BITCH!"); 
-            logStartTime = System.currentTimeMillis();
-            parseThread = new Thread(fileParser);
-            parseThread.start();
+        if(pyFilepath.isEmpty()) {
+            new MessageBox("Please select a python file from File>Find Python File.").setVisible(true);
         }
         else {
-            startButton.setText("START THIS BITCH!");
-            pyScript.destroy();
-            if(parseThread.isAlive())
-                parseThread.interrupt();
+            isRunning = !isRunning;
+            if(isRunning) {
+                try {
+                    //start python script
+                    pyScript = Runtime.getRuntime().exec("python " + pyFilepath) ;
+                    Thread.sleep(250);
+                } catch (IOException ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                    new MessageBox("Error running python file").setVisible(true);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                    new MessageBox("Interrupted Exception").setVisible(true);
+                }
+                startButton.setText("STOP THIS BITCH!"); 
+                logStartTime = System.currentTimeMillis();
+                parseThread = new Thread(fileParser);
+                parseThread.start();
+            }
+            else {
+                startButton.setText("START THIS BITCH!");
+                pyScript.destroy();
+                SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");  
+                Date date = new Date();
+                String now = formatter.format(date);
+                try {
+                    //copy file before its deleted
+                    hashTableToCSV();
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if(parseThread.isAlive())
+                    parseThread.interrupt();
+            }
         }
         
     }//GEN-LAST:event_startButtonActionPerformed
@@ -976,7 +994,7 @@ public class MainWindow extends javax.swing.JFrame {
                 }
             }
             
-            System.out.println ("File sample.csv has been created" );
+            Toast.makeToast(this, "Saved as: " + now, Toast.DURATION_LONG);
             
         } catch (IOException x) {
             System.out.println(x);
