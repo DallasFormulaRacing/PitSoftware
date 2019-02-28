@@ -6,8 +6,12 @@
 package pitsoftware;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.comm.CommPortIdentifier;
+import javax.comm.PortInUseException;
+import javax.comm.*;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
@@ -21,20 +25,30 @@ import jssc.SerialPortList;
 public class SerialCommunicator {
     
     static SerialPort serial;
-    
+    static CommPort comm;
     //array list to hold data that has not been parsed yet
     static ArrayList<String> data;
+    String hexString;
     
     boolean isRunning;
     
     
-    public SerialCommunicator() throws SerialPortException {
+    public SerialCommunicator(String portName) throws SerialPortException, PortInUseException {
         
         data = new ArrayList<>();
         String[] portList = SerialPortList.getPortNames();
         
+//        Enumeration portIdents = CommPortIdentifier.getPortIdentifiers();
+//        while(portIdents.hasMoreElements()) {
+//            CommPortIdentifier portID = (CommPortIdentifier) portIdents.nextElement();
+//            if(portID.getName().equals(portName)) {
+//                comm = portID.open("XbeePort", 20);
+//            }
+//
+//        }
+        
         for(String s : portList) {
-            if(s.equals("COM5")) {
+            if(s.equals(portName)) {
                 serial = new SerialPort(s);
                 System.out.println("started");
 
@@ -51,7 +65,7 @@ public class SerialCommunicator {
         
         serial.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, 0, SerialPort.PARITY_NONE);
         
-        serial.addEventListener(new PortReader());
+        serial.addEventListener(new PortReader());        
         
     }
     
@@ -85,6 +99,11 @@ public class SerialCommunicator {
 
             }
         }
+        
+//        @Override
+//        public void serialEvent(SerialPortEvent event) {
+//            if(event.getEventType() == SerialPortEvent.)
+//        }
 
     } 
 

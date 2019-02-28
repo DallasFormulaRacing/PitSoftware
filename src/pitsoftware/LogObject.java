@@ -43,8 +43,8 @@ public abstract class LogObject implements Comparable, CategoricalHashTableInter
     public String toString() {
         return TAG;
     }
-
     
+
     //if we do ever sort, keep the list in order of TAGS, then time.
     @Override
     public int compareTo(Object o) {

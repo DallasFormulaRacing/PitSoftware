@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,11 +25,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.TooManyListenersException;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import jssc.SerialPort;
+import jssc.SerialPortEvent;
+import jssc.SerialPortEventListener;
+import jssc.SerialPortException;
+import jssc.SerialPortList;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
@@ -40,59 +47,43 @@ import static pitsoftware.MainWindow.pyFilepath;
  *
  * @author aribdhuka
  */
-public class GaugesWindow extends javax.swing.JFrame {
+public class GaugesWindowSerial extends javax.swing.JFrame {
 
     TreeMap<String, Radial> gauges;
     CategoricalHashTable<LogObject> logData;
     //Thread that handles parsing hexstrings in the background
     Thread parseThread;
-    Runnable fileParser = new Runnable() {
-        
+    Runnable serialParser = new Runnable() {
         @Override
         public void run() {
-            //try to createa a buffered input with the given file
-            BufferedInputStream reader = null;
+            
             try {
-                String filepath = pyFilepath.substring(0, pyFilepath.lastIndexOf("/") + 1) + "data.txt";
-                reader = new BufferedInputStream(new FileInputStream(new File(filepath)));
-            } catch (FileNotFoundException e) {
-                System.out.println(e.getMessage());
+                createSerial(serialPath);
+            } catch (TooManyListenersException ex) {
+                new MessageBox("too many listeners.").setVisible(true);
+                Thread.currentThread().interrupt();
+            } catch (IOException ex) {
+                new MessageBox("io exception").setVisible(true);
+                Thread.currentThread().interrupt();
+            } catch (SerialPortException ex) {
+                new MessageBox("serial port probably not found. most likely\n idk man. you prob gave some bs port.\n try again.").setVisible(true);
+                Thread.currentThread().interrupt();
             }
-
-            //if reader failed
-            if(reader == null) {
-                new MessageBox("Couldn't find file!").setVisible(true);
-                return;
-            }
-
-            System.out.println("fileParser start");
-
-            //current item
-            String curr = "";
-
+            
             while(true) {
-                try {
-                    int avail = reader.available();
-                    if(avail > 0) {
-                        char c = (char) reader.read();
-                        if(c == '\n') {
-                            if(!curr.isEmpty())
-                                updateUI(curr);
-                            curr = "";
-                        } else {
-                            curr += c;
-                        }
-                    } else {
-                        try {
-                            Thread.sleep(50);
-                        } catch(InterruptedException e) {
-                            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, e);
-                        }
+                if(!data.isEmpty()) {
+                    suspend = true;
+                    updateUI(data);
+                    suspend = false;
+                } else {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(GaugesWindowSerial.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                } catch (IOException e) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, e);
                 }
             }
+            
         }
     };
     
@@ -129,11 +120,7 @@ public class GaugesWindow extends javax.swing.JFrame {
         }
     };
     
-        
-    //holds the python filepath
-    static String pyFilepath;
-    //Process that is running the python script
-    Process pyScript;
+    
     //holds the start time of the program
     static long logStartTime = 0;
     //list of all the windows open
@@ -142,10 +129,19 @@ public class GaugesWindow extends javax.swing.JFrame {
     boolean isRunning;
     
     
+    //static variables for serial port
+    static ArrayList<String> data;
+    static SerialPort serial;
+    static BufferedReader input;
+    static StringBuilder incompleteData;
+    String serialPath;
+    static boolean suspend;
+    
+    
     /**
      * Creates new form GaugesWindow
      */
-    public GaugesWindow() {
+    public GaugesWindowSerial() {
         initComponents();
 //        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 //
@@ -161,9 +157,34 @@ public class GaugesWindow extends javax.swing.JFrame {
         //launch the thread that adds sample data.
         graphThread = new Thread(graphRunner);
         graphThread.start();
-        pyFilepath = "";
         
-        setupPaths();
+        //TODO: undo this.
+        serialPath = "/dev/tty.usbmodem144401";
+        
+        incompleteData = new StringBuilder();
+        data = new ArrayList<>();
+        suspend = false;
+    }
+    
+    private void createSerial(String portName) throws TooManyListenersException, IOException, SerialPortException {
+        data = new ArrayList<>();
+        String[] portList = SerialPortList.getPortNames();
+        for(String s : portList) {
+            System.out.println("jssc: " + s);
+        }
+        
+        for(String s : portList) {
+            if(s.equals(portName)) {
+                serial = new SerialPort(portName);
+                System.out.println("started");
+
+                break;
+            }
+        }
+        
+        serial.openPort();
+        serial.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, 0, SerialPort.PARITY_NONE);
+        serial.addEventListener(new PortReader());
     }
 
     /**
@@ -198,7 +219,6 @@ public class GaugesWindow extends javax.swing.JFrame {
         exportDataMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1375, 800));
         setResizable(false);
         setSize(new java.awt.Dimension(1375, 800));
 
@@ -524,47 +544,47 @@ public class GaugesWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-        if(pyFilepath.isEmpty()) {
-            new MessageBox("Please select a python file from File>Find Python File.").setVisible(true);
+        isRunning = !isRunning;
+        if(isRunning) {
+            //check if serial path is defined
+            if(!serialPath.isEmpty()) {
+                //start thread to read
+                parseThread = new Thread(serialParser);
+                parseThread.start();
+                //set button text
+                startButton.setText("STOP THIS BITCH!");
+                //set start time
+                logStartTime = System.currentTimeMillis();
+            } else {
+                //if path was not defined
+                //set isRunning to false
+                isRunning = false;
+                //let the user know they need to select a serial path
+                new MessageBox("DEFINE SERIAL PATH!! DUMBASS.").setVisible(true);
+            }
         }
         else {
-            isRunning = !isRunning;
-            if(isRunning) {
-                try {
-                    //start python script
-                    System.out.println(pyFilepath);
-                    String[] cmd = new String[] {"/Library/Frameworks/Python.framework/Versions/3.7/bin/python3.7", pyFilepath};
-                    pyScript = Runtime.getRuntime().exec(cmd);
-                    Thread.sleep(2000);
-                } catch (IOException ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                    new MessageBox("Error running python file").setVisible(true);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                    new MessageBox("Interrupted Exception").setVisible(true);
-                }
-                startButton.setText("STOP THIS BITCH!");
-                logStartTime = System.currentTimeMillis();
-                parseThread = new Thread(fileParser);
-                parseThread.start();
+            startButton.setText("START THIS BITCH!");
+            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+            Date date = new Date();
+            String now = formatter.format(date);
+            try {
+                //copy file before its deleted
+                hashTableToCSV();
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
-            else {
-                startButton.setText("START THIS BITCH!");
-                pyScript.destroy();
-                SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-                Date date = new Date();
-                String now = formatter.format(date);
-                try {
-                    //copy file before its deleted
-                    hashTableToCSV();
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                if(parseThread.isAlive())
+            if(parseThread.isAlive())
                 parseThread.interrupt();
+            
+            try {
+                serial.closePort();
+            } catch (SerialPortException ex) {
+                new MessageBox("uhh. This is incredibly unlikely.").setVisible(true);
             }
         }
+        
     }//GEN-LAST:event_startButtonActionPerformed
 
     private void findPythonFileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPythonFileMenuItemActionPerformed
@@ -611,28 +631,11 @@ public class GaugesWindow extends javax.swing.JFrame {
         hashTableToCSV();
     }//GEN-LAST:event_exportDataMenuItemActionPerformed
 
-    
-    private void setupPaths() {
-        // Get a list of all environment variables
-        final Map<String, String> envMap = new HashMap<String, String>(System.getenv());
-
-        // Append Python bin path to Path
-        envMap.put("Path", envMap.get("Path") + "/Library/Frameworks/Python.framework/Versions/3.7/");
-        
-
-        // Convert to an array of ENV_KEY=ENV_VALUE format strings
-        final String[] envs = new String[envMap.size()];
-        int i = 0;
-        for (Map.Entry<String, String> e : envMap.entrySet()) {
-            envs[i] = e.getKey() + '=' + e.getValue();
-            i++;
-        }
-    }
     /**
      * Draws all the gauges for each panel on initialization of frame
      */
     private void drawGauges() {
-        createCircularGauge("FuelOpenTime", "MS", "FuelOpenTime", new Dimension(200,200), 0, 7, 5.5, false, 4.5, 7, fuelOpenTimePanel);
+        createCircularGauge("FuelOpenTime", "MS", "FuelOpenTime", new Dimension(200,200), 0, 12, 5.5, false, 4.5, 11, fuelOpenTimePanel);
         createCircularGauge("A:F", "AFR", "AFR", new Dimension(200,200), 10, 22, 12, true, 10, 13, AFRPanel);
         createCircularGauge("Ignition Angle", "deg-ret", "IgnitionAngle", new Dimension(200,200), 0, 45, 50, false, 0, 0, ignAnglePanel);
         createCircularGauge("Raw Lambda Voltage", "Volts", "Analog3", new Dimension(200,200), 0, 5, 1, true, 0, 1, lamda1RawPanel);
@@ -656,6 +659,7 @@ public class GaugesWindow extends javax.swing.JFrame {
         for(String str : data) {
             updateUI(str);
         }
+        data.clear();
     }
     
     public void updateUI(String data) {
@@ -664,7 +668,7 @@ public class GaugesWindow extends javax.swing.JFrame {
         if(data.length() < 4)
             return;
         //if the length of the line is not the right size skip the value
-        if(!data.substring(0, 4).equals("#005") && data.length() != 22) {
+        if(!data.substring(0, 4).equals("#005") && data.length() != 23) {
             System.out.print("Invalid CAN String!--");
             System.out.println(data);
             return;
@@ -695,6 +699,7 @@ public class GaugesWindow extends javax.swing.JFrame {
                 parseGroupSix(data.substring(4));
                 break;
             case "007":
+                parseGroupSeven(data.substring(4));
                 break;
             case "008":
                 parseGroupEight(data.substring(4));
@@ -881,7 +886,7 @@ public class GaugesWindow extends javax.swing.JFrame {
     public void parseGroupFive(String line)
     {
         try {
-            int transTeeth = Integer.parseInt(line.substring(0, line.length()-2));
+            int transTeeth = Integer.parseInt(line.substring(0, line.length()-3));
             double speed = ((transTeeth/23.0)*.2323090909*60)*(3.141592654*.0003219697);
             speed *= 60;
             gauges.get("Speed").setValue(speed);
@@ -921,6 +926,11 @@ public class GaugesWindow extends javax.swing.JFrame {
         gauges.get("Coolant").setValue(coolantTemp);
     }
 
+    private void parseGroupSeven(String line) {
+        double inlet = Double.parseDouble(line.substring(0, line.charAt('F')));
+        double outlet = Double.parseDouble(line.substring(line.charAt('F')+1, line.length()));
+        
+    }
     private void parseGroupEight(String line)
     {
 
@@ -1054,23 +1064,51 @@ public class GaugesWindow extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GaugesWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GaugesWindowSerial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(GaugesWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GaugesWindowSerial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(GaugesWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GaugesWindowSerial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GaugesWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GaugesWindowSerial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new GaugesWindow().setVisible(true);
+                new GaugesWindowSerial().setVisible(true);
             }
         });
     }
+    
+    private static class PortReader implements SerialPortEventListener {
+        
+        @Override
+        public void serialEvent(SerialPortEvent event) {
+            try {
+                if(!suspend) {
+                    String tempString = serial.readString();
+                    for(int i = 0; i < tempString.length(); i++) {
+                        if(!incompleteData.toString().isEmpty() && incompleteData.charAt(incompleteData.length() - 1) == '\n') {
+                            data.add(incompleteData.toString());
+                            incompleteData = new StringBuilder();
+                            i--;
+                        } else {
+                            incompleteData.append(tempString.charAt(i));
+                        }
+                    }
+                    suspend = true;
+                }
+            } catch (SerialPortException ex) {
+                System.out.println("error");
+            }
+            
+            
+        }
+
+    } 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel AFRPanel;
