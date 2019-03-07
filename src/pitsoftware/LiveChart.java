@@ -9,6 +9,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import javax.swing.JFrame;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -19,6 +20,7 @@ import org.jfree.chart.plot.Crosshair;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.general.DatasetUtilities;
+import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleEdge;
 
@@ -76,7 +78,33 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
     
     //update the chart shown when given a new chart
     public void updateChart(JFreeChart chart) {
-        initChart(chart);
+        
+        try {
+        //save the chartPanel reference to be used locally
+            chartPanel = new ChartPanel(chart);
+            //make sure the size is correct
+    //        chartPanel.setPreferredSize(new java.awt.Dimension(400, 300));
+    //        chartPanel.setMaximumSize(new java.awt.Dimension(400, 300));
+    //        chartPanel.setMinimumSize(new java.awt.Dimension(400, 300));
+            chartPanel.setSize(new java.awt.Dimension(400, 300));
+
+
+            // make the charts not scrunch up, althought the bounding value probably needs to be adjusted
+            XYPlot xyPlot = chart.getXYPlot();
+
+            ValueAxis domainAxis = xyPlot.getDomainAxis();
+            domainAxis.setAutoRange(true);
+            domainAxis.setFixedAutoRange(30000); // 30 seconds of data at a time
+
+            ValueAxis rangeAxis = xyPlot.getRangeAxis();
+            rangeAxis.setAutoRange(true);
+
+            //add the panels contents to the frame
+            chartFrame.setContentPane(chartPanel);
+        } catch (Exception e) {
+            
+        }
+        
     }
     
     //create the first instance of a chart
@@ -85,13 +113,16 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
         chartPanel = new ChartPanel(chart);
         //make sure the size is correct
         chartPanel.setPreferredSize(new java.awt.Dimension(400, 300));
+        chartPanel.setMaximumSize(new java.awt.Dimension(400, 300));
+        chartPanel.setMinimumSize(new java.awt.Dimension(400, 300));
+        chartPanel.setSize(new java.awt.Dimension(400, 300));
         
         // make the charts not scrunch up, althought the bounding value probably needs to be adjusted
         XYPlot xyPlot = chart.getXYPlot();
         
         ValueAxis domainAxis = xyPlot.getDomainAxis();
         domainAxis.setAutoRange(true);
-        domainAxis.setFixedAutoRange(30); // 30 seconds of data at a time
+        domainAxis.setFixedAutoRange(30000); // 30 seconds of data at a time
         
         ValueAxis rangeAxis = xyPlot.getRangeAxis();
         rangeAxis.setAutoRange(true);
@@ -141,7 +172,7 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
         chartFrame.getContentPane().setLayout(chartFrameLayout);
         chartFrameLayout.setHorizontalGroup(
             chartFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 398, Short.MAX_VALUE)
         );
         chartFrameLayout.setVerticalGroup(
             chartFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -167,14 +198,14 @@ public class LiveChart extends javax.swing.JFrame implements ChartMouseListener 
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(chartFrame, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(chartFrame, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))
+                        .addComponent(jScrollPane1))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()

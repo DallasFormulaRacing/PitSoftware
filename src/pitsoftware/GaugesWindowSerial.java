@@ -10,26 +10,23 @@ import com.arib.toast.Toast;
 import eu.hansolo.steelseries.gauges.*;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.io.BufferedInputStream;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.TooManyListenersException;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
@@ -41,43 +38,42 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import static pitsoftware.MainWindow.pyFilepath;
-
 /**
  *
  * @author aribdhuka
  */
 public class GaugesWindowSerial extends javax.swing.JFrame {
 
-    TreeMap<String, Radial> gauges;
+    TreeMap<String, ScaledRadial> gauges;
     CategoricalHashTable<LogObject> logData;
     //Thread that handles parsing hexstrings in the background
     Thread parseThread;
+    long startTime;
     Runnable serialParser = new Runnable() {
         @Override
         public void run() {
             
-            try {
-                createSerial(serialPath);
-            } catch (TooManyListenersException ex) {
-                new MessageBox("too many listeners.").setVisible(true);
-                Thread.currentThread().interrupt();
-            } catch (IOException ex) {
-                new MessageBox("io exception").setVisible(true);
-                Thread.currentThread().interrupt();
-            } catch (SerialPortException ex) {
-                new MessageBox("serial port probably not found. most likely\n idk man. you prob gave some bs port.\n try again.").setVisible(true);
-                Thread.currentThread().interrupt();
-            }
+            startTime = System.currentTimeMillis();
             
             while(true) {
                 if(!data.isEmpty()) {
                     suspend = true;
                     updateUI(data);
+                    if(!graphList.isEmpty() && System.currentTimeMillis() - startTime > 500) {
+                        //for each LiveChart window
+                        for(LiveChart c : graphList) {
+                            //if c is still open
+                            if(c.isActive()) {
+                                //update its chart
+                                c.updateChart(createJFreeChart(c.getTag()));
+                            }
+                        }
+                        startTime = System.currentTimeMillis();
+                    }
                     suspend = false;
                 } else {
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(50);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(GaugesWindowSerial.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -130,7 +126,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     
     
     //static variables for serial port
-    static ArrayList<String> data;
+    static LinkedList<String> data;
     static SerialPort serial;
     static BufferedReader input;
     static StringBuilder incompleteData;
@@ -159,15 +155,41 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         graphThread.start();
         
         //TODO: undo this.
-        serialPath = "/dev/tty.usbmodem144401";
+        serialPath = "";
         
         incompleteData = new StringBuilder();
-        data = new ArrayList<>();
+        data = new LinkedList<>();
         suspend = false;
+        
+        createSerialMenu();
+    }
+    
+    private void createSerialMenu() {
+        String[] portList = SerialPortList.getPortNames();
+        if(portList.length == 1) {
+            serialPath = portList[0];
+            Toast.makeToast(this, "Selected: " + serialPath, Toast.DURATION_MEDIUM);
+        }
+        for(String s : portList) {
+            JMenuItem item = new JMenuItem(s);
+            applyAction(item);
+            serialMenu.add(item);
+        }
+    }
+    
+    private void applyAction(JMenuItem item) {
+        item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                serialPath = item.getText();
+                Toast.makeToast(GaugesWindowSerial.this, "Selected: " + serialPath, Toast.DURATION_MEDIUM);
+            }
+        });
+
     }
     
     private void createSerial(String portName) throws TooManyListenersException, IOException, SerialPortException {
-        data = new ArrayList<>();
+        data = new LinkedList<>();
         String[] portList = SerialPortList.getPortNames();
         for(String s : portList) {
             System.out.println("jssc: " + s);
@@ -182,6 +204,8 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             }
         }
         
+        if(serial.isOpened())
+            serial.closePort();
         serial.openPort();
         serial.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, 0, SerialPort.PARITY_NONE);
         serial.addEventListener(new PortReader());
@@ -215,14 +239,20 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         speedPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
-        findPythonFileMenuItem = new javax.swing.JMenuItem();
+        findSerialPortsMenuItem = new javax.swing.JMenuItem();
         exportDataMenuItem = new javax.swing.JMenuItem();
+        serialMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
         setSize(new java.awt.Dimension(1375, 800));
 
         fuelOpenTimePanel.setPreferredSize(new java.awt.Dimension(250, 188));
+        fuelOpenTimePanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                fuelOpenTimePanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout fuelOpenTimePanelLayout = new javax.swing.GroupLayout(fuelOpenTimePanel);
         fuelOpenTimePanel.setLayout(fuelOpenTimePanelLayout);
@@ -236,6 +266,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         coolantPanel.setPreferredSize(new java.awt.Dimension(250, 188));
+        coolantPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                coolantPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout coolantPanelLayout = new javax.swing.GroupLayout(coolantPanel);
         coolantPanel.setLayout(coolantPanelLayout);
@@ -249,6 +284,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         mapPanel.setPreferredSize(new java.awt.Dimension(250, 188));
+        mapPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                mapPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout mapPanelLayout = new javax.swing.GroupLayout(mapPanel);
         mapPanel.setLayout(mapPanelLayout);
@@ -262,6 +302,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         AFRPanel.setPreferredSize(new java.awt.Dimension(200, 200));
+        AFRPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                AFRPanelMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout AFRPanelLayout = new javax.swing.GroupLayout(AFRPanel);
         AFRPanel.setLayout(AFRPanelLayout);
@@ -275,6 +320,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         lamda1RawPanel.setPreferredSize(new java.awt.Dimension(200, 200));
+        lamda1RawPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                lamda1RawPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout lamda1RawPanelLayout = new javax.swing.GroupLayout(lamda1RawPanel);
         lamda1RawPanel.setLayout(lamda1RawPanelLayout);
@@ -288,6 +338,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         lamda2RawPanel.setPreferredSize(new java.awt.Dimension(200, 200));
+        lamda2RawPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                lamda2RawPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout lamda2RawPanelLayout = new javax.swing.GroupLayout(lamda2RawPanel);
         lamda2RawPanel.setLayout(lamda2RawPanelLayout);
@@ -301,6 +356,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         ignAnglePanel.setPreferredSize(new java.awt.Dimension(250, 188));
+        ignAnglePanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                ignAnglePanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout ignAnglePanelLayout = new javax.swing.GroupLayout(ignAnglePanel);
         ignAnglePanel.setLayout(ignAnglePanelLayout);
@@ -314,6 +374,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         rpmPanel.setPreferredSize(new java.awt.Dimension(250, 188));
+        rpmPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                rpmPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout rpmPanelLayout = new javax.swing.GroupLayout(rpmPanel);
         rpmPanel.setLayout(rpmPanelLayout);
@@ -327,6 +392,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         tpsPanel.setPreferredSize(new java.awt.Dimension(250, 188));
+        tpsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                tpsPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout tpsPanelLayout = new javax.swing.GroupLayout(tpsPanel);
         tpsPanel.setLayout(tpsPanelLayout);
@@ -340,6 +410,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         bprPanel.setPreferredSize(new java.awt.Dimension(250, 188));
+        bprPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                bprPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout bprPanelLayout = new javax.swing.GroupLayout(bprPanel);
         bprPanel.setLayout(bprPanelLayout);
@@ -353,6 +428,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         );
 
         bpfPanel.setPreferredSize(new java.awt.Dimension(250, 188));
+        bpfPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                bpfPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout bpfPanelLayout = new javax.swing.GroupLayout(bpfPanel);
         bpfPanel.setLayout(bpfPanelLayout);
@@ -367,6 +447,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
 
         airPanel.setPreferredSize(new java.awt.Dimension(200, 200));
         airPanel.setSize(new java.awt.Dimension(250, 188));
+        airPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                airPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout airPanelLayout = new javax.swing.GroupLayout(airPanel);
         airPanel.setLayout(airPanelLayout);
@@ -381,6 +466,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
 
         barPanel.setPreferredSize(new java.awt.Dimension(200, 200));
         barPanel.setSize(new java.awt.Dimension(250, 188));
+        barPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                barPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout barPanelLayout = new javax.swing.GroupLayout(barPanel);
         barPanel.setLayout(barPanelLayout);
@@ -395,6 +485,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
 
         voltagePanel.setPreferredSize(new java.awt.Dimension(250, 188));
         voltagePanel.setSize(new java.awt.Dimension(250, 188));
+        voltagePanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                voltagePanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout voltagePanelLayout = new javax.swing.GroupLayout(voltagePanel);
         voltagePanel.setLayout(voltagePanelLayout);
@@ -417,6 +512,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
 
         speedPanel.setPreferredSize(new java.awt.Dimension(200, 200));
         speedPanel.setSize(new java.awt.Dimension(250, 188));
+        speedPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                speedPanelMouseReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout speedPanelLayout = new javax.swing.GroupLayout(speedPanel);
         speedPanel.setLayout(speedPanelLayout);
@@ -431,13 +531,13 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
 
         jMenu1.setText("File");
 
-        findPythonFileMenuItem.setText("Find Python File");
-        findPythonFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        findSerialPortsMenuItem.setText("Find Serial Ports");
+        findSerialPortsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                findPythonFileMenuItemActionPerformed(evt);
+                findSerialPortsMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(findPythonFileMenuItem);
+        jMenu1.add(findSerialPortsMenuItem);
 
         exportDataMenuItem.setText("Export Data");
         exportDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -448,6 +548,9 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         jMenu1.add(exportDataMenuItem);
 
         jMenuBar1.add(jMenu1);
+
+        serialMenu.setText("Ports");
+        jMenuBar1.add(serialMenu);
 
         setJMenuBar(jMenuBar1);
 
@@ -505,27 +608,27 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                         .addComponent(startButton, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(rpmPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(bprPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(bpfPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGap(47, 47, 47)
-                                    .addComponent(tpsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(voltagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(ignAnglePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(fuelOpenTimePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(mapPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGap(50, 50, 50)
-                                    .addComponent(coolantPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(bprPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(bpfPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(47, 47, 47)
+                                .addComponent(tpsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(voltagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ignAnglePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fuelOpenTimePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(mapPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(50, 50, 50)
+                                .addComponent(coolantPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -534,9 +637,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                             .addComponent(lamda2RawPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(airPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(barPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(speedPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(speedPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(100, Short.MAX_VALUE))
         );
 
@@ -549,12 +650,21 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             //check if serial path is defined
             if(!serialPath.isEmpty()) {
                 //start thread to read
-                parseThread = new Thread(serialParser);
-                parseThread.start();
-                //set button text
-                startButton.setText("STOP THIS BITCH!");
-                //set start time
-                logStartTime = System.currentTimeMillis();
+                try {
+                    createSerial(serialPath);
+                    parseThread = new Thread(serialParser);
+                    parseThread.start();
+                    //set button text
+                    startButton.setText("STOP THIS BITCH!");
+                    //set start time
+                    logStartTime = System.currentTimeMillis();
+                } catch (TooManyListenersException ex) {
+                    new MessageBox("too many listeners.").setVisible(true);
+                } catch (IOException ex) {
+                    new MessageBox("io exception").setVisible(true);
+                } catch (SerialPortException ex) {
+                    new MessageBox("serial port probably not found. most likely\n idk man. you prob gave some bs port.\n try again.").setVisible(true);
+                }
             } else {
                 //if path was not defined
                 //set isRunning to false
@@ -587,49 +697,75 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         
     }//GEN-LAST:event_startButtonActionPerformed
 
-    private void findPythonFileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPythonFileMenuItemActionPerformed
-        // TODO add your handling code here:
-        //open file for vehicleData
-        // Open a separate dialog to select a .csv file
-        fileChooser = new JFileChooser() {
-
-            // Override approveSelection method because we only want to approve
-            //  the selection if its is a .csv file.
-            @Override
-            public void approveSelection() {
-                File chosenFile = getSelectedFile();
-
-                // Make sure that the chosen file exists
-                if (chosenFile.exists()) {
-                    // Get the file extension to make sure it is .csv
-                    String filePath = chosenFile.getAbsolutePath();
-                    int lastIndex = filePath.lastIndexOf(".");
-                    String fileExtension = filePath.substring(lastIndex,
-                        filePath.length());
-
-                    // approve selection if it is a .csv file
-                    if (fileExtension.equals(".py")) {
-                        super.approveSelection();
-                    } else {
-                        // do nothing - that selection should not be approved
-                    }
-
-                }
-            }
-        };
-
-        // showOpenDialog returns the chosen option and if it as an approve
-        //  option then the file should be imported and opened
-        int choice = fileChooser.showOpenDialog(null);
-        if (choice == JFileChooser.APPROVE_OPTION) {
-            pyFilepath = fileChooser.getSelectedFile().getAbsolutePath();
-        }
-    }//GEN-LAST:event_findPythonFileMenuItemActionPerformed
-
     private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDataMenuItemActionPerformed
         //Call the method to export
         hashTableToCSV();
     }//GEN-LAST:event_exportDataMenuItemActionPerformed
+
+    private void findSerialPortsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findSerialPortsMenuItemActionPerformed
+        serialMenu.removeAll();
+        createSerialMenu();
+    }//GEN-LAST:event_findSerialPortsMenuItemActionPerformed
+
+    private void rpmPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rpmPanelMouseReleased
+        showJFreeChart("Time,RPM");        
+    }//GEN-LAST:event_rpmPanelMouseReleased
+
+    private void coolantPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_coolantPanelMouseReleased
+        showJFreeChart("Time,Coolant");
+    }//GEN-LAST:event_coolantPanelMouseReleased
+
+    private void ignAnglePanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ignAnglePanelMouseReleased
+        showJFreeChart("Time,IgnitionAngle");
+    }//GEN-LAST:event_ignAnglePanelMouseReleased
+
+    private void fuelOpenTimePanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fuelOpenTimePanelMouseReleased
+        showJFreeChart("Time,FuelOpenTime");
+    }//GEN-LAST:event_fuelOpenTimePanelMouseReleased
+
+    private void mapPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mapPanelMouseReleased
+        showJFreeChart("Time,MAP");
+    }//GEN-LAST:event_mapPanelMouseReleased
+
+    private void AFRPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AFRPanelMouseClicked
+        showJFreeChart("Time,AFR");
+    }//GEN-LAST:event_AFRPanelMouseClicked
+
+    private void lamda1RawPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lamda1RawPanelMouseReleased
+        showJFreeChart("Time,Analog3");
+    }//GEN-LAST:event_lamda1RawPanelMouseReleased
+
+    private void lamda2RawPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lamda2RawPanelMouseReleased
+        showJFreeChart("Time,Analog4");
+    }//GEN-LAST:event_lamda2RawPanelMouseReleased
+
+    private void speedPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_speedPanelMouseReleased
+        showJFreeChart("Time,WheelspeedRear");
+    }//GEN-LAST:event_speedPanelMouseReleased
+
+    private void barPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_barPanelMouseReleased
+        showJFreeChart("Time,Barometer");
+    }//GEN-LAST:event_barPanelMouseReleased
+
+    private void airPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_airPanelMouseReleased
+        showJFreeChart("Time,AirTemp");
+    }//GEN-LAST:event_airPanelMouseReleased
+
+    private void voltagePanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_voltagePanelMouseReleased
+        showJFreeChart("Time,Voltage");
+    }//GEN-LAST:event_voltagePanelMouseReleased
+
+    private void tpsPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tpsPanelMouseReleased
+        showJFreeChart("Time,TPS");
+    }//GEN-LAST:event_tpsPanelMouseReleased
+
+    private void bpfPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bpfPanelMouseReleased
+        showJFreeChart("Time,Analog1");
+    }//GEN-LAST:event_bpfPanelMouseReleased
+
+    private void bprPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bprPanelMouseReleased
+        showJFreeChart("Time,Analog2");
+    }//GEN-LAST:event_bprPanelMouseReleased
 
     /**
      * Draws all the gauges for each panel on initialization of frame
@@ -642,24 +778,25 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         createCircularGauge("Raw Lambda Voltage", "Volts", "Analog4", new Dimension(200,200), 0, 5, 1, true, 0, 1, lamda2RawPanel);
         createCircularGauge("Manifold Air Pressure", "psi", "MAP", new Dimension(200,200), 0, 18, 5, true, 0, 5, mapPanel);
         createCircularGauge("Coolant", "Farenheit", "Coolant", new Dimension(200,200), 32, 225, 200, false, 200, 225, coolantPanel);
-        createCircularGauge("Engine RPM", "RPMx1k", "RPM", new Dimension(400,400), 0, 14, 12, false, 10.5, 14, rpmPanel);
+        createCircularGauge("Engine RPM", "RPMx1K", "RPM", new Dimension(400,400), 1000, 0, 14, 12, false, 10.5, 14, rpmPanel);
         createCircularGauge("Throttle Position", "%", "TPS", new Dimension(200,200), 0, 100, 75, false, 90, 100, tpsPanel);
-        createCircularGauge("Brake Pressure Front", "psix1000", "Analog1", new Dimension(200,200), 0, 2, 2, false, 1.5, 2, bpfPanel);
-        createCircularGauge("Brake Pressure Rear", "psix1000", "Analog2", new Dimension(200,200), 0, 2, 2, false, 1.5, 2, bprPanel);
+        createCircularGauge("Brake Pressure Front", "psix1000", "Analog1", new Dimension(200,200), 1000, 0, 2, 2, false, 1.5, 2, bpfPanel);
+        createCircularGauge("Brake Pressure Rear", "psix1000", "Analog2", new Dimension(200,200), 1000, 0, 2, 2, false, 1.5, 2, bprPanel);
         createCircularGauge("Intake Air Temp", "Farenheit", "AirTemp", new Dimension(200,200), 32, 110, 100, false, 100, 110, airPanel);
         createCircularGauge("Barometer", "psi", "Barometer", new Dimension(200,200), 0, 15, 13, true, 0, 0, barPanel);
         createCircularGauge("Battery Voltage", "Volts", "Voltage", new Dimension(200,200), 0, 15.5, 12, true, 0, 11.5, voltagePanel);
         createCircularGauge("Speed", "MPH", "Speed", new Dimension(200,200), 0, 99, 60, false, 60, 99, speedPanel);
         
+        
     }
     
     //update the UI from a list of data
-    public void updateUI(ArrayList<String> data) {
+    public void updateUI(LinkedList<String> data) {
         //for each string, update the UI.
-        for(String str : data) {
-            updateUI(str);
+        while(!data.isEmpty()) {
+            updateUI(data.getFirst());
+            data.removeFirst();
         }
-        data.clear();
     }
     
     public void updateUI(String data) {
@@ -668,7 +805,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         if(data.length() < 4)
             return;
         //if the length of the line is not the right size skip the value
-        if(!data.substring(0, 4).equals("#005") && data.length() != 23) {
+        if(!(data.substring(0, 4).equals("#005") || data.substring(0, 4).equals("#007")) && data.length() != 23) {
             System.out.print("Invalid CAN String!--");
             System.out.println(data);
             return;
@@ -691,6 +828,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                 break;
             case "004":
                 break;
+            //group five contains speed
             case "005":
                 parseGroupFive(data.substring(4));
                 break;
@@ -698,6 +836,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             case "006":
                 parseGroupSix(data.substring(4));
                 break;
+            //group seven contains inlet outlet
             case "007":
                 parseGroupSeven(data.substring(4));
                 break;
@@ -731,15 +870,23 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         }
     }
     
-    private void createCircularGauge(String title, String unit, String TAG, Dimension size, double min, double max, double threshold, boolean invertThreshold, double trackStart, double trackStop, JPanel parent) {
+    
+    //create with default scale
+    private Radial createCircularGauge(String title, String unit, String TAG, Dimension size, double min, double max, double threshold, boolean invertThreshold, double trackStart, double trackStop, JPanel parent) {
+        return createCircularGauge(title, unit, TAG, size, 1.0, min, max, threshold, invertThreshold, trackStart, trackStop, parent);
+    }
+    
+    private Radial createCircularGauge(String title, String unit, String TAG, Dimension size, double scale, double min, double max, double threshold, boolean invertThreshold, double trackStart, double trackStop, JPanel parent) {
         //create object
-        Radial gauge = new Radial();
+        ScaledRadial gauge = new ScaledRadial();
         //set the title
         gauge.setTitle(title);
         //set the units
         gauge.setUnitString(unit);
         //set the size
         gauge.setSize(size);
+        //set the scale
+        gauge.setScale(scale);
         //set the max limit
         gauge.setMaxValue(max);
         //set the min value
@@ -762,6 +909,8 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         //add the gauge to the panel
         parent.add(gauge);
         gauges.put(TAG, gauge);
+        
+        return gauge;
     }
     
         /**
@@ -803,10 +952,10 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         ignAngle *= .1;
         logData.put(new SimpleLogObject("Time,IgnitionAngle", ignAngle));
         
-        gauges.get("RPM").setValue(rpm/1000.0);
-        gauges.get("TPS").setValue(tps);
-        gauges.get("FuelOpenTime").setValue(fuelOpenTime);
-        gauges.get("IgnitionAngle").setValue(ignAngle);
+        gauges.get("RPM").setScaledValue(rpm);
+        gauges.get("TPS").setScaledValue(tps);
+        gauges.get("FuelOpenTime").setScaledValue(fuelOpenTime);
+        gauges.get("IgnitionAngle").setScaledValue(ignAngle);
         
     }
 
@@ -835,8 +984,8 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         lambda *= 0.001;
         logData.put(new SimpleLogObject("Time,Lambda", lambda));
         
-        gauges.get("Barometer").setValue(barometer);
-        gauges.get("MAP").setValue(map);
+        gauges.get("Barometer").setScaledValue(barometer);
+        gauges.get("MAP").setScaledValue(map);
         //lambda input no longer exists
         //ecu is mapped to analog 3 and 4 for 2 lambda sensors
         
@@ -850,37 +999,36 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         in1 = Integer.parseInt(line.substring(0,2), 16);
         in2 = Integer.parseInt(line.substring(2,4), 16) * 256;
         input1 = in1 + in2;
-        input1 *= 0.001;
-        logData.put(new SimpleLogObject("Time,Input1", input1));
+        logData.put(new SimpleLogObject("Time,Analog1", input1));
         
         in1 = Integer.parseInt(line.substring(4,6), 16);
         in2 = Integer.parseInt(line.substring(6,8), 16) * 256;
         input2 = in1 + in2;
-        input2 *= 0.001;
-        logData.put(new SimpleLogObject("Time,Input2", input2));
+        logData.put(new SimpleLogObject("Time,Analog2", input2));
         
         in1 = Integer.parseInt(line.substring(8,10), 16);
         in2 = Integer.parseInt(line.substring(10,12), 16) * 256;
         input3 = in1 + in2;
         input3 *= 0.001;
-        logData.put(new SimpleLogObject("Time,Input3", input3));
+        logData.put(new SimpleLogObject("Time,Analog3", input3));
         
         in1 = Integer.parseInt(line.substring(12,14), 16);
         in2 = Integer.parseInt(line.substring(14,16), 16) * 256;
         input4 = in1 + in2;
         input4 *= 0.001;
-        logData.put(new SimpleLogObject("Time,Input4", input4));
+        logData.put(new SimpleLogObject("Time,Analog4", input4));
         
         double avg = input3 + input4;
         avg /= 2;
         avg = (2*avg)+10;
+        logData.put(new SimpleLogObject("Time,AFR", avg));
         
         
-        gauges.get("Analog1").setValue(input1);
-        gauges.get("Analog2").setValue(input2);
-        gauges.get("Analog3").setValue(input3);
-        gauges.get("Analog4").setValue(input4);
-        gauges.get("AFR").setValue(avg);
+        gauges.get("Analog1").setScaledValue(input1);
+        gauges.get("Analog2").setScaledValue(input2);
+        gauges.get("Analog3").setScaledValue(input3);
+        gauges.get("Analog4").setScaledValue(input4);
+        gauges.get("AFR").setScaledValue(avg);
     }
     
     public void parseGroupFive(String line)
@@ -889,7 +1037,8 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             int transTeeth = Integer.parseInt(line.substring(0, line.length()-3));
             double speed = ((transTeeth/23.0)*.2323090909*60)*(3.141592654*.0003219697);
             speed *= 60;
-            gauges.get("Speed").setValue(speed);
+            gauges.get("Speed").setScaledValue(speed);
+            logData.put(new SimpleLogObject("Time,WheelspeedRear", speed));
         } catch(NumberFormatException e) {
             System.out.println("speed format exception--" + line);
         }
@@ -921,14 +1070,14 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         coolantTemp *= 0.1;
         logData.put(new SimpleLogObject("Time,Coolant", coolantTemp));
         
-        gauges.get("Voltage").setValue(batteryVoltage);
-        gauges.get("AirTemp").setValue(airTemp);
-        gauges.get("Coolant").setValue(coolantTemp);
+        gauges.get("Voltage").setScaledValue(batteryVoltage);
+        gauges.get("AirTemp").setScaledValue(airTemp);
+        gauges.get("Coolant").setScaledValue(coolantTemp);
     }
 
     private void parseGroupSeven(String line) {
-        double inlet = Double.parseDouble(line.substring(0, line.charAt('F')));
-        double outlet = Double.parseDouble(line.substring(line.charAt('F')+1, line.length()));
+        double inlet = Double.parseDouble(line.substring(0, line.indexOf('F')));
+        double outlet = Double.parseDouble(line.substring(line.indexOf('F')+1, line.length()));
         
     }
     private void parseGroupEight(String line)
@@ -954,20 +1103,30 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     
     //create the JFree Chart and show it
     private void showJFreeChart(String TAG) {
-        //get the chart object from another method call
-        JFreeChart chart = createJFreeChart(TAG);
-        if(chart == null)
-            return;
-        //create a new window that has the chart.
-        LiveChart liveChart = new LiveChart(chart, TAG);
-        //add the chart to the list of windows
-        graphList.add(liveChart);
-        //show the window
-        liveChart.setVisible(true);
+        if(suspend) {
+            //get the chart object from another method call
+            JFreeChart chart;
+            try {
+                chart = createJFreeChart(TAG);
+            } catch (ConcurrentModificationException e){
+                Toast.makeToast(this, "Try again.", Toast.DURATION_SHORT);
+                return;
+            }
+            if(chart == null)
+                return;
+            //create a new window that has the chart.
+            LiveChart liveChart = new LiveChart(chart, TAG);
+            //add the chart to the list of windows
+            graphList.add(liveChart);
+            //show the window
+            liveChart.setVisible(true);
+        } else {
+            Toast.makeToast(this, "Try again.", Toast.DURATION_SHORT);
+        }
     }
     
     //creates a JFreeChart object given a TAG
-    private JFreeChart createJFreeChart(String TAG) {
+    private JFreeChart createJFreeChart(String TAG) throws ConcurrentModificationException {
         //create the collection of series
         XYSeriesCollection data = new XYSeriesCollection();
         
@@ -1043,7 +1202,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             Toast.makeToast(this, "Saved as: " + now, Toast.DURATION_LONG);
             
         } catch (IOException x) {
-            System.out.println(x);
+            Toast.makeToast(this, "Save Error!", Toast.DURATION_MEDIUM);
         }
     } 
     
@@ -1083,26 +1242,46 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         });
     }
     
+    /**
+     * Handles what to do when a serial event occurs
+     */
     private static class PortReader implements SerialPortEventListener {
         
+        //on new serial data
         @Override
         public void serialEvent(SerialPortEvent event) {
+            //try to read from the port
             try {
+                //if the main array is not suspended
                 if(!suspend) {
+                    boolean toSuspend = false;
+                    //get the string from the port
                     String tempString = serial.readString();
+                    //for each char we read
                     for(int i = 0; i < tempString.length(); i++) {
+                        //if the data string is not empty and the end of the data string is a new line (ie the data string is complete)
                         if(!incompleteData.toString().isEmpty() && incompleteData.charAt(incompleteData.length() - 1) == '\n') {
+                            //add the data string to the main array
                             data.add(incompleteData.toString());
+                            //reset the data string
                             incompleteData = new StringBuilder();
+                            //move back one position since we didnt read this char
                             i--;
+                            //say that we should suspend at the end of this loop, since new data needs to be displayed
+                            toSuspend = true;
+                        //if the data string is empty or the data string is not complete (marked by newline at the end)
                         } else {
+                            //add the current char to the data string
                             incompleteData.append(tempString.charAt(i));
                         }
                     }
-                    suspend = true;
+                    //suspend the main array
+                    suspend = toSuspend;
                 }
+            //catch read error
             } catch (SerialPortException ex) {
-                System.out.println("error");
+                //print error
+                System.out.println("port read error");
             }
             
             
@@ -1119,7 +1298,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     private javax.swing.JPanel coolantPanel;
     private javax.swing.JMenuItem exportDataMenuItem;
     private javax.swing.JFileChooser fileChooser;
-    private javax.swing.JMenuItem findPythonFileMenuItem;
+    private javax.swing.JMenuItem findSerialPortsMenuItem;
     private javax.swing.JPanel fuelOpenTimePanel;
     private javax.swing.JPanel ignAnglePanel;
     private javax.swing.JMenu jMenu1;
@@ -1128,6 +1307,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     private javax.swing.JPanel lamda2RawPanel;
     private javax.swing.JPanel mapPanel;
     private javax.swing.JPanel rpmPanel;
+    private javax.swing.JMenu serialMenu;
     private javax.swing.JPanel speedPanel;
     private javax.swing.JButton startButton;
     private javax.swing.JPanel tpsPanel;

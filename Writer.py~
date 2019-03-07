@@ -5,7 +5,7 @@ import serial
 import time
 
 print("trying to create Serial")
-ser = serial.Serial('/dev/cu.usbmodem143401', 115200)
+ser = serial.Serial('/dev/cu.usbmodem144101', 115200)
 print("created")
 print("read input")
 if(os.path.exists("data.txt")):
