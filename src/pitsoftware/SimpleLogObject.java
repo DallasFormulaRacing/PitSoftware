@@ -23,6 +23,12 @@ public class SimpleLogObject extends LogObject {
         this.value = value;
         this.time = System.currentTimeMillis() - MainWindow.logStartTime;
     }
+    
+    public SimpleLogObject(String TAG, double value, long time) {
+        this.TAG = TAG;
+        this.value = value;
+        this.time = time;
+    }
 
     public double getValue() {
         return value;
