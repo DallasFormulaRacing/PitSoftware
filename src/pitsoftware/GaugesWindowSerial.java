@@ -57,8 +57,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             
             while(true) {
                 if(!data.isEmpty()) {
-                    suspend = true;
-                    updateUI(data);
+                    updateUI();
                     if(!graphList.isEmpty() && System.currentTimeMillis() - startTime > 500) {
                         //for each LiveChart window
                         for(LiveChart c : graphList) {
@@ -70,7 +69,6 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                         }
                         startTime = System.currentTimeMillis();
                     }
-                    suspend = false;
                 } else {
                     try {
                         Thread.sleep(50);
@@ -126,7 +124,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     
     
     //static variables for serial port
-    static LinkedList<String> data;
+    static final LinkedList<String> data = new LinkedList<>();
     static SerialPort serial;
     static BufferedReader input;
     static StringBuilder incompleteData;
@@ -158,8 +156,9 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         serialPath = "";
         
         incompleteData = new StringBuilder();
-        data = new LinkedList<>();
         suspend = false;
+        currTime = 0;
+        currAccelTime = 0;
         
         createSerialMenu();
     }
@@ -189,7 +188,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     }
     
     private void createSerial(String portName) throws TooManyListenersException, IOException, SerialPortException {
-        data = new LinkedList<>();
+        data.clear();
         String[] portList = SerialPortList.getPortNames();
         for(String s : portList) {
             System.out.println("jssc: " + s);
@@ -658,6 +657,8 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                     startButton.setText("STOP THIS BITCH!");
                     //set start time
                     logStartTime = System.currentTimeMillis();
+                    currTime = 0;
+                    currAccelTime = 0;
                 } catch (TooManyListenersException ex) {
                     new MessageBox("too many listeners.").setVisible(true);
                 } catch (IOException ex) {
@@ -674,10 +675,14 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             }
         }
         else {
+            try {
+                serial.closePort();
+                serial = null;
+                data.clear();
+            } catch (SerialPortException ex) {
+                new MessageBox("uhh. This is incredibly unlikely.").setVisible(true);
+            }
             startButton.setText("START THIS BITCH!");
-            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-            Date date = new Date();
-            String now = formatter.format(date);
             try {
                 //copy file before its deleted
                 hashTableToCSV();
@@ -687,12 +692,6 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             }
             if(parseThread.isAlive())
                 parseThread.interrupt();
-            
-            try {
-                serial.closePort();
-            } catch (SerialPortException ex) {
-                new MessageBox("uhh. This is incredibly unlikely.").setVisible(true);
-            }
         }
         
     }//GEN-LAST:event_startButtonActionPerformed
@@ -791,11 +790,15 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     }
     
     //update the UI from a list of data
-    public void updateUI(LinkedList<String> data) {
+    public void updateUI() {
         //for each string, update the UI.
         while(!data.isEmpty()) {
-            updateUI(data.getFirst());
-            data.removeFirst();
+            String currData = "";
+            synchronized(data) {
+                currData = data.getFirst();
+                data.removeFirst();
+            }
+            updateUI(currData);
         }
     }
     
@@ -1269,10 +1272,8 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         public void serialEvent(SerialPortEvent event) {
             //try to read from the port
             try {
-                //if the main array is not suspended
-                if(!suspend) {
-                    boolean toSuspend = false;
-                    //get the string from the port
+                //get the string from the port
+                if(serial != null) {
                     String tempString = serial.readString();
                     //for each char we read
                     for(int i = 0; i < tempString.length(); i++) {
@@ -1292,8 +1293,6 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                             incompleteData.append(tempString.charAt(i));
                         }
                     }
-                    //suspend the main array
-                    suspend = toSuspend;
                 }
             //catch read error
             } catch (SerialPortException ex) {
