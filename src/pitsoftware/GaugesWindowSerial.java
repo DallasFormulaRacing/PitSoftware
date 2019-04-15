@@ -121,7 +121,8 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     ArrayList<LiveChart> graphList;
     //holds if running
     boolean isRunning;
-    
+    long currTime;
+    long currAccelTime;
     
     //static variables for serial port
     static final LinkedList<String> data = new LinkedList<>();
@@ -130,6 +131,35 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     static StringBuilder incompleteData;
     String serialPath;
     static boolean suspend;
+    
+    private static int RPM = 0;
+    private static double TPS = 0;
+    private static double FOT = 0;
+    private static double ignAngle = 0;
+
+    private static double bar = 0;
+    private static double MAP = 0;
+    private static double lambda = 0;
+
+    private static double analog1 = 0;
+    private static double analog2 = 0;
+    private static double analog3 = 0;
+    private static double analog4 = 0;
+
+    private static double volts = 0;
+    private static double airTemp = 0;
+    private static double coolant = 0;
+    
+    private static double radiatorInlet = 0;
+    private static double radiatorOutlet = 0;
+    
+    
+    private static double x = 0;
+    private static double y = 0;
+    private static double z = 0;
+    
+    private static double speed = 0;
+    private static double transTeeth = 0;
     
     
     /**
@@ -731,11 +761,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     }//GEN-LAST:event_AFRPanelMouseClicked
 
     private void lamda1RawPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lamda1RawPanelMouseReleased
-        showJFreeChart("Time,Analog3");
+        showJFreeChart("Time,RadiatorInlet");
     }//GEN-LAST:event_lamda1RawPanelMouseReleased
 
     private void lamda2RawPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lamda2RawPanelMouseReleased
-        showJFreeChart("Time,Analog4");
+        showJFreeChart("Time,RadiatorOutlet");
     }//GEN-LAST:event_lamda2RawPanelMouseReleased
 
     private void speedPanelMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_speedPanelMouseReleased
@@ -773,8 +803,10 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         createCircularGauge("FuelOpenTime", "MS", "FuelOpenTime", new Dimension(200,200), 0, 12, 5.5, false, 4.5, 11, fuelOpenTimePanel);
         createCircularGauge("A:F", "AFR", "AFR", new Dimension(200,200), 10, 22, 12, true, 10, 13, AFRPanel);
         createCircularGauge("Ignition Angle", "deg-ret", "IgnitionAngle", new Dimension(200,200), 0, 45, 50, false, 0, 0, ignAnglePanel);
-        createCircularGauge("Raw Lambda Voltage", "Volts", "Analog3", new Dimension(200,200), 0, 5, 1, true, 0, 1, lamda1RawPanel);
-        createCircularGauge("Raw Lambda Voltage", "Volts", "Analog4", new Dimension(200,200), 0, 5, 1, true, 0, 1, lamda2RawPanel);
+//        createCircularGauge("Raw Lambda Voltage", "Volts", "Analog3", new Dimension(200,200), 0, 5, 1, true, 0, 1, lamda1RawPanel);
+//        createCircularGauge("Raw Lambda Voltage", "Volts", "Analog4", new Dimension(200,200), 0, 5, 1, true, 0, 1, lamda2RawPanel);
+        createCircularGauge("Inlet Temp", "Farhenheit", "RadiatorInlet", new Dimension(200,200), 32, 225, 200, false, 200, 225, lamda1RawPanel);
+        createCircularGauge("Outlet Temp", "Farhenheit", "RadiatorOutlet", new Dimension(200,200), 32, 225, 200, false, 200, 225, lamda2RawPanel);
         createCircularGauge("Manifold Air Pressure", "psi", "MAP", new Dimension(200,200), 0, 18, 5, true, 0, 5, mapPanel);
         createCircularGauge("Coolant", "Farenheit", "Coolant", new Dimension(200,200), 32, 225, 200, false, 200, 225, coolantPanel);
         createCircularGauge("Engine RPM", "RPMx1K", "RPM", new Dimension(400,400), 1000, 0, 14, 12, false, 10.5, 14, rpmPanel);
@@ -820,6 +852,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             //group one is RPM, TPS, fuelopentime, ignition angle
             case "001":
                 parseGroupOne(data.substring(4));
+                writeToMap();
                 break;
             //group two is barometer, MAP, and lambda
             case "002":
@@ -844,7 +877,6 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                 parseGroupSeven(data.substring(4));
                 break;
             case "008":
-                parseGroupEight(data.substring(4));
                 break;
             case "009":
                 break;
@@ -857,15 +889,13 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             case "013":
                 break;
             case "014":
-                parseGroupFourteen(data.substring(4));
                 break;
             case "015":
-                parseGroupFifteen(data.substring(4));
                 break;
             case "016":
-                parseGroupSixteen(data.substring(4));
                 break;
             case "017":
+                parseGroupSeventeen(data.substring(4));
                 break;
             default:
                 Toast.makeToast(this, "Parse fail", Toast.DURATION_SHORT);
@@ -907,6 +937,8 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
             gauge.setTrackStopColor(Color.RED);
             gauge.setTrackVisible(true);
         }
+        gauge.setMaxMeasuredValueVisible(true);
+        gauge.setMinMeasuredValueVisible(true);
         //set the panel the gauge will go in size
         parent.setPreferredSize(size);
         //add the gauge to the panel
@@ -925,70 +957,68 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
      * @param line 
      */
     private void parseGroupOne(String line) {
-        int rpm;
-        double tps, fuelOpenTime, ignAngle;
 
         int rpm1, rpm2;
         rpm1 = Integer.parseUnsignedInt(line.substring(0, 2), 16);
         rpm2 = Integer.parseUnsignedInt(line.substring(2,4), 16) * 256;
-        rpm = rpm1 + rpm2;
-        logData.put(new SimpleLogObject("Time,RPM", rpm));
+        RPM = rpm1 + rpm2;
+        //logData.put(new SimpleLogObject("Time,RPM", rpm, currTime));
         
         int tps1, tps2;
         tps1 = Integer.parseInt(line.substring(4, 6), 16);
         tps2 = Integer.parseInt(line.substring(6, 8), 16) * 256;
-        tps = tps1 + tps2;
-        tps *= .1;
-        logData.put(new SimpleLogObject("Time,TPS", tps)); // right way of doing it
+        TPS = tps1 + tps2;
+        TPS *= .1;
+        //logData.put(new SimpleLogObject("Time,TPS", tps, currTime)); // right way of doing it
         
         int fot1, fot2;
         fot1 = Integer.parseInt((line.substring(8,10)), 16);
         fot2 = Integer.parseInt((line.substring(10,12)), 16) * 256;
-        fuelOpenTime = fot1 + fot2;
-        fuelOpenTime *= .01;
-        logData.put(new SimpleLogObject("Time,FuelOpenTime", fuelOpenTime));
+        FOT = fot1 + fot2;
+        FOT *= .01;
+        //logData.put(new SimpleLogObject("Time,FuelOpenTime", fuelOpenTime, currTime));
         
         int ignAngle1, ignAngle2;
         ignAngle1 = Integer.parseInt((line.substring(12, 14)), 16);
         ignAngle2 = Integer.parseInt((line.substring(14, 16)), 16) * 256;
         ignAngle = ignAngle1 + ignAngle2;
         ignAngle *= .1;
-        logData.put(new SimpleLogObject("Time,IgnitionAngle", ignAngle));
+        //logData.put(new SimpleLogObject("Time,IgnitionAngle", ignAngle, currTime));
         
-        gauges.get("RPM").setScaledValue(rpm);
-        gauges.get("TPS").setScaledValue(tps);
-        gauges.get("FuelOpenTime").setScaledValue(fuelOpenTime);
+        gauges.get("RPM").setScaledValue(RPM);
+        gauges.get("TPS").setScaledValue(TPS);
+        gauges.get("FuelOpenTime").setScaledValue(FOT);
         gauges.get("IgnitionAngle").setScaledValue(ignAngle);
+        currTime += 50;
         
     }
 
     private void parseGroupTwo(String line)
     {
-        double barometer, map, lambda;
 
         double barometer1, barometer2;
         barometer1 = Integer.parseInt(line.substring(0,2), 16);
         barometer2 = Integer.parseInt(line.substring(2,4), 16) * 256;
-        barometer = barometer1 + barometer2;
-        barometer *= 0.01;
-        logData.put(new SimpleLogObject("Time,Barometer", barometer));
+        bar = barometer1 + barometer2;
+        bar *= 0.01;
+        //logData.put(new SimpleLogObject("Time,Barometer", barometer, currTime));
         
         double map1, map2;
         map1 = Integer.parseInt(line.substring(4,6), 16);
         map2 = Integer.parseInt(line.substring(6,8), 16) * 256;
-        map = map1 + map2;
-        map *= 0.01;
-        logData.put(new SimpleLogObject("Time,MAP", map));
+        MAP = map1 + map2;
+        MAP *= 0.01;
+        //logData.put(new SimpleLogObject("Time,MAP", map, currTime));
         
         double lambda1, lambda2;
         lambda1 = Integer.parseInt(line.substring(8,10), 16);
         lambda2 = Integer.parseInt(line.substring(10,12), 16) * 256;
         lambda = lambda1 + lambda2;
         lambda *= 0.001;
-        logData.put(new SimpleLogObject("Time,Lambda", lambda));
+        //logData.put(new SimpleLogObject("Time,Lambda", lambda, currTime));
         
-        gauges.get("Barometer").setScaledValue(barometer);
-        gauges.get("MAP").setScaledValue(map);
+        gauges.get("Barometer").setScaledValue(bar);
+        gauges.get("MAP").setScaledValue(MAP);
         //lambda input no longer exists
         //ecu is mapped to analog 3 and 4 for 2 lambda sensors
         
@@ -996,52 +1026,52 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
 
     private void parseGroupThree(String line) throws NumberFormatException
     {
-        double input1, input2, input3, input4;
+//        double input1, input2, input3, input4;
         double in1, in2;
         
         in1 = Integer.parseInt(line.substring(0,2), 16);
         in2 = Integer.parseInt(line.substring(2,4), 16) * 256;
-        input1 = in1 + in2;
-        logData.put(new SimpleLogObject("Time,Analog1", input1));
+        analog1 = in1 + in2;
+//        logData.put(new SimpleLogObject("Time,Analog1", input1, currTime));
         
         in1 = Integer.parseInt(line.substring(4,6), 16);
         in2 = Integer.parseInt(line.substring(6,8), 16) * 256;
-        input2 = in1 + in2;
-        logData.put(new SimpleLogObject("Time,Analog2", input2));
+        analog2 = in1 + in2;
+        //logData.put(new SimpleLogObject("Time,Analog2", input2, currTime));
         
         in1 = Integer.parseInt(line.substring(8,10), 16);
         in2 = Integer.parseInt(line.substring(10,12), 16) * 256;
-        input3 = in1 + in2;
-        input3 *= 0.001;
-        logData.put(new SimpleLogObject("Time,Analog3", input3));
+        analog3 = in1 + in2;
+        analog3 *= 0.001;
+        //logData.put(new SimpleLogObject("Time,Analog3", input3, currTime));
         
         in1 = Integer.parseInt(line.substring(12,14), 16);
         in2 = Integer.parseInt(line.substring(14,16), 16) * 256;
-        input4 = in1 + in2;
-        input4 *= 0.001;
-        logData.put(new SimpleLogObject("Time,Analog4", input4));
+        analog4 = in1 + in2;
+        analog4 *= 0.001;
+        //logData.put(new SimpleLogObject("Time,Analog4", input4, currTime));
         
-        double avg = input3 + input4;
+        double avg = analog3+ analog4;
         avg /= 2;
         avg = (2*avg)+10;
-        logData.put(new SimpleLogObject("Time,AFR", avg));
+        //logData.put(new SimpleLogObject("Time,AFR", avg, currTime));
         
         
-        gauges.get("Analog1").setScaledValue(input1);
-        gauges.get("Analog2").setScaledValue(input2);
-        gauges.get("Analog3").setScaledValue(input3);
-        gauges.get("Analog4").setScaledValue(input4);
+        gauges.get("Analog1").setScaledValue(analog1);
+        gauges.get("Analog2").setScaledValue(analog2);
+//        gauges.get("Analog3").setScaledValue(analog3);
+//        gauges.get("Analog4").setScaledValue(analog4);
         gauges.get("AFR").setScaledValue(avg);
     }
     
     public void parseGroupFive(String line)
     {
         try {
-            int transTeeth = Integer.parseInt(line.substring(0, line.length()-3));
-            double speed = ((transTeeth/23.0)*.2323090909*60)*(3.141592654*.0003219697);
+            transTeeth = Integer.parseInt(line.substring(0, line.length()-3));
+            speed = ((transTeeth/23.0)*.2323090909*60)*(3.141592654*.0003219697);
             speed *= 60;
             gauges.get("Speed").setScaledValue(speed);
-            logData.put(new SimpleLogObject("Time,WheelspeedRear", speed));
+            //logData.put(new SimpleLogObject("Time,WheelspeedRear", speed, currTime));
         } catch(NumberFormatException e) {
             System.out.println("speed format exception--" + line);
         }
@@ -1050,59 +1080,60 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     public void parseGroupSix(String line)
     {
         int tempType;
-        double batteryVoltage, airTemp, coolantTemp;
+//        double batteryVoltage, airTemp, coolantTemp;
         
         double batVol1, batVol2;
         batVol1 = Integer.parseInt(line.substring(0,2), 16);
         batVol2 = Integer.parseInt(line.substring(2,4), 16) * 256;
-        batteryVoltage = batVol1 + batVol2;
-        batteryVoltage *= 0.01;
-        logData.put(new SimpleLogObject("Time,Voltage", batteryVoltage));
+        volts = batVol1 + batVol2;
+        volts *= 0.01;
+        //logData.put(new SimpleLogObject("Time,Voltage", batteryVoltage, currTime));
         
         double airTemp1, airTemp2;
         airTemp1 = Integer.parseInt(line.substring(4,6), 16);
         airTemp2 = Integer.parseInt(line.substring(6,8), 16) * 256;
         airTemp = airTemp1 + airTemp2;
         airTemp *= 0.1;
-        logData.put(new SimpleLogObject("Time,Air", airTemp));
+        //logData.put(new SimpleLogObject("Time,Air", airTemp, currTime));
 
         double coolantTemp1, coolantTemp2;
         coolantTemp1 = Integer.parseInt(line.substring(8,10), 16);
         coolantTemp2 = Integer.parseInt(line.substring(10,12), 16) * 256;
-        coolantTemp = coolantTemp1 + coolantTemp2;
-        coolantTemp *= 0.1;
-        logData.put(new SimpleLogObject("Time,Coolant", coolantTemp));
+        coolant = coolantTemp1 + coolantTemp2;
+        coolant *= 0.1;
+        //logData.put(new SimpleLogObject("Time,Coolant", coolantTemp, currTime));
         
-        gauges.get("Voltage").setScaledValue(batteryVoltage);
+        gauges.get("Voltage").setScaledValue(volts);
         gauges.get("AirTemp").setScaledValue(airTemp);
-        gauges.get("Coolant").setScaledValue(coolantTemp);
+        gauges.get("Coolant").setScaledValue(coolant);
     }
 
     private void parseGroupSeven(String line) {
         double inlet = Double.parseDouble(line.substring(0, line.indexOf('F')));
         double outlet = Double.parseDouble(line.substring(line.indexOf('F')+1, line.length()));
         
-    }
-    private void parseGroupEight(String line)
-    {
-
-    }
-
-    private void parseGroupFourteen(String line)
-    {
-
+        radiatorInlet = inlet;
+        radiatorOutlet = outlet;
+        
+        gauges.get("RadiatorInlet").setScaledValue(inlet);
+        gauges.get("RadiatorOutlet").setScaledValue(outlet);
     }
 
-    private void parseGroupFifteen(String line)
-    {
-
-    }
-
-    private void parseGroupSixteen(String line)
-    {
-
-    }
     
+    private void parseGroupSeventeen(String line)
+    {
+        String[] split = line.split(",");
+        if(split.length == 3) {
+            double x = Double.parseDouble(split[0]);
+            double y = Double.parseDouble(split[1]);
+            double z = Double.parseDouble(split[2]);
+            logData.put(new SimpleLogObject("Time,xAccel", x, currAccelTime));
+            logData.put(new SimpleLogObject("Time,yAccel", y, currAccelTime));
+            logData.put(new SimpleLogObject("Time,zAccel", z, currAccelTime));
+        }
+        
+        currAccelTime += 5;
+    }
     
     //create the JFree Chart and show it
     private void showJFreeChart(String TAG) {
@@ -1131,7 +1162,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     //creates a JFreeChart object given a TAG
     private JFreeChart createJFreeChart(String TAG) throws ConcurrentModificationException {
         //create the collection of series
-        XYSeriesCollection data = new XYSeriesCollection();
+        XYSeriesCollection collection = new XYSeriesCollection();
         
         //create the series of data
         XYSeries series = new XYSeries(TAG);
@@ -1151,7 +1182,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         }
         
         //add the series to the collection
-        data.addSeries(series);
+        collection.addSeries(series);
         
         String[] tagSplit = TAG.split(",");
         // Create a JFreeChart from the Factory, given parameters (Chart Title, Domain name, Range name, series collection, PlotOrientation, show legend, show tooltips, show url)
@@ -1159,7 +1190,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                 TAG,
                 tagSplit[0],
                 tagSplit[1],
-                data,
+                collection,
                 PlotOrientation.VERTICAL,
                 true,
                 true,
@@ -1169,8 +1200,29 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         
     }
     
-    public void hashTableToCSV()
-    {
+    private void writeToMap() {
+        logData.put(new SimpleLogObject("Time,RPM", RPM, currTime));
+        logData.put(new SimpleLogObject("Time,TPS", TPS, currTime));
+        logData.put(new SimpleLogObject("Time,FuelOpenTime", FOT, currTime));
+        logData.put(new SimpleLogObject("Time,IgnitionAngle", ignAngle, currTime));
+        logData.put(new SimpleLogObject("Time,Barometer", bar, currTime));
+        logData.put(new SimpleLogObject("Time,MAP", MAP, currTime));
+        logData.put(new SimpleLogObject("Time,Lambda", lambda, currTime));
+        logData.put(new SimpleLogObject("Time,Analog1", analog1, currTime));
+        logData.put(new SimpleLogObject("Time,Analog2", analog2, currTime));
+        logData.put(new SimpleLogObject("Time,Analog3", analog3, currTime));
+        logData.put(new SimpleLogObject("Time,Analog4", analog4, currTime));
+        logData.put(new SimpleLogObject("Time,Voltage", volts, currTime));
+        logData.put(new SimpleLogObject("Time,AirTemp", airTemp, currTime));
+        logData.put(new SimpleLogObject("Time,Coolant", coolant, currTime));
+        logData.put(new SimpleLogObject("Time,WheelspeedRear", speed, currTime));
+        logData.put(new SimpleLogObject("Time,TransmissionTeeth", transTeeth, currTime));
+        logData.put(new SimpleLogObject("Time,RadiatorInlet", radiatorInlet, currTime));
+        logData.put(new SimpleLogObject("Time,RadiatorOutlet", radiatorOutlet, currTime));
+        
+    }
+    
+    public void hashTableToCSV() {
         try {
             //ask for filename
             String[] filename = new String[1];
@@ -1206,15 +1258,23 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                     // Prints 'tag' before data is printed if data is not empty
                     pw.println(tag);
                 
+                    long lastTime = -1;
                     // Loop that prints data under 'tag' on separate lines
                     for (LogObject lo : data) {
-                        // Prints each piece of data to a unique cell on one line
-                        pw.println(lo.toString());
-                        // Sends single data line to print in file
-                        pw.flush();
+                        // if the current time is not the same as the last time
+                        //Prints each piece of data to a unique cell on one line
+                        if(lo.getTime() != lastTime) {
+                            pw.println(lo.toString());
+                            // Sends single data line to print in file
+                            pw.flush();
+                        }
+                        
+                        //update last time
+                        lastTime = lo.getTime();
+                        
                     }
                     //print end tag
-                    pw.println("END\n");
+                    pw.println("END");
                 
                 }
             }
@@ -1275,22 +1335,24 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                 //get the string from the port
                 if(serial != null) {
                     String tempString = serial.readString();
-                    //for each char we read
-                    for(int i = 0; i < tempString.length(); i++) {
-                        //if the data string is not empty and the end of the data string is a new line (ie the data string is complete)
-                        if(!incompleteData.toString().isEmpty() && incompleteData.charAt(incompleteData.length() - 1) == '\n') {
-                            //add the data string to the main array
-                            data.add(incompleteData.toString());
-                            //reset the data string
-                            incompleteData = new StringBuilder();
-                            //move back one position since we didnt read this char
-                            i--;
-                            //say that we should suspend at the end of this loop, since new data needs to be displayed
-                            toSuspend = true;
-                        //if the data string is empty or the data string is not complete (marked by newline at the end)
-                        } else {
-                            //add the current char to the data string
-                            incompleteData.append(tempString.charAt(i));
+                        if(tempString != null) {
+                        //for each char we read
+                        for(int i = 0; i < tempString.length(); i++) {
+                            //if the data string is not empty and the end of the data string is a new line (ie the data string is complete)
+                            if(!incompleteData.toString().isEmpty() && incompleteData.charAt(incompleteData.length() - 1) == '\n') {
+                                //add the data string to the main array
+                                synchronized(data) {
+                                    data.add(incompleteData.toString());
+                                }
+                                //reset the data string
+                                incompleteData = new StringBuilder();
+                                //move back one position since we didnt read this char
+                                i--;
+                            //if the data string is empty or the data string is not complete (marked by newline at the end)
+                            } else {
+                                //add the current char to the data string
+                                incompleteData.append(tempString.charAt(i));
+                            }
                         }
                     }
                 }
