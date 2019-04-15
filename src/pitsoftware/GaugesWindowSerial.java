@@ -1169,12 +1169,29 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     public void hashTableToCSV()
     {
         try {
+            //ask for filename
+            String[] filename = new String[1];
+            FileNameDialog fnd = new FileNameDialog(this, true, filename);
+            fnd.setVisible(true);
+            while(filename[0].isEmpty()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(GaugesWindowSerial.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
             //get todays date
-            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");  
+            SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy--HH-mm-ss");  
             Date date = new Date();
             String now = formatter.format(date);
+            String filenamestr = "";
+            if(filename[0].equals("!#@$NONAME")) {
+                filenamestr = now;
+            } else {
+                filenamestr = filename[0];
+            }
             // Creates a new csv file to put data into. File is located within 'PitSoftware' git folder
-            FileOutputStream csv = new FileOutputStream(new File(now + ".csv"), true);
+            FileOutputStream csv = new FileOutputStream(new File(filenamestr + ".csv"), true);
             // Allows program to print/write data into file
             PrintWriter pw = new PrintWriter(csv);
             
