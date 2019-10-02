@@ -250,21 +250,20 @@ public class CustomizableWindow extends javax.swing.JFrame {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if(evt.getButton() == java.awt.event.MouseEvent.BUTTON3)
                 {
-                    System.out.println("RIGHT CLICK");
                     JPanel panel = (JPanel)evt.getSource();
                     CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+                   
                     Component[] components = panel.getComponents();
-                    gauges.get("Time, RPM");
                 
                     
                     //Set up all the variables
-                    for(String key : gauges.keySet())
-                    {
-                        if(gauges.get(key) == gauge)
-                        {
-                            System.out.println(key);
-                        }
-                    }
+//                    for(String key : gauges.keySet())
+//                    {
+//                        if(gauges.get(key) == gauge)
+//                        {
+//                            System.out.println(key);
+//                        }
+//                    }
                    GaugeProperties gp = new GaugeProperties(frame, true, (ScaledRadial)components[0], tag);
                     
                     gp.setVisible(true);

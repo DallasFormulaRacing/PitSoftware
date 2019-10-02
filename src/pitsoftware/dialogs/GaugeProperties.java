@@ -80,7 +80,7 @@ public class GaugeProperties extends javax.swing.JDialog {
         //If Gauge is already filled out
         titleField.setText(gauge.getTitle());
         unitField.setText(gauge.getUnitString());
-        sizeField.setText("" + gauge.getSize().getHeight());
+        sizeField.setText("" + (int)gauge.getSize().getHeight());
         minField.setText("" + (int)gauge.getMinValue());
         maxField.setText("" + (int)gauge.getMaxValue());
         warningField.setText(""+ (int)gauge.getThreshold());
