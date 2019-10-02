@@ -8,6 +8,7 @@ package pitsoftware.dialogs;
 import eu.hansolo.steelseries.gauges.AbstractGauge;
 import eu.hansolo.steelseries.gauges.Linear;
 import eu.hansolo.steelseries.gauges.Radial;
+import eu.hansolo.steelseries.tools.Model;
 import java.awt.Dimension;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -75,6 +76,26 @@ public class GaugeProperties extends javax.swing.JDialog {
                 }
             }
         });
+        
+        //If Gauge is already filled out
+        titleField.setText(gauge.getTitle());
+        unitField.setText(gauge.getUnitString());
+        sizeField.setText("" + gauge.getSize().getHeight());
+        minField.setText("" + (int)gauge.getMinValue());
+        maxField.setText("" + (int)gauge.getMaxValue());
+        warningField.setText(""+ (int)gauge.getThreshold());
+        invertThresholdCheckBox.setSelected(gauge.isThresholdBehaviourInverted());
+        redlineMinField.setText("" + (int)gauge.getTrackStart());
+        redlineMaxField.setText("" + (int)gauge.getTrackStop());
+        //Model model = gauge.getModel()
+
+        tagList.setSelectedValue(tag, modal);
+        
+        if(gauge instanceof ScaledRadial) 
+            scaleField.setText(""+((ScaledRadial) gauge).getScale());
+        else if (gauge instanceof ScaledLinear)
+            scaleField.setText(""+((ScaledLinear) gauge).getScale());
+        
         
     }
 

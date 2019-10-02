@@ -13,6 +13,8 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.util.TreeMap;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import java.awt.Component;
 import pitsoftware.dialogs.CustomizeGaugeDialog;
 import pitsoftware.dialogs.GaugeProperties;
 
@@ -49,6 +51,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
         generateEditPanel();
         //create logger
         logger = new Logger();
+        System.out.println("Finished initializing");
     }
 
     /**
@@ -72,10 +75,9 @@ public class CustomizableWindow extends javax.swing.JFrame {
         editPanelMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setResizable(false);
         setSize(new java.awt.Dimension(1375, 800));
 
-        editPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED, java.awt.Color.black, java.awt.Color.black));
+        editPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder(0, java.awt.Color.black, java.awt.Color.black));
 
         radial_editPanel.setBackground(new java.awt.Color(255, 255, 255));
         radial_editPanel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -224,6 +226,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
         newPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             @Override
             public void mouseDragged(java.awt.event.MouseEvent evt) {
+                System.out.println("Dragging");
                 if(editing) {
                     JPanel panel = (JPanel) evt.getSource();
                     Point newLocation = evt.getLocationOnScreen();
@@ -234,6 +237,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 }
             }
         });
+        
         this.add(newPanel);
         newPanel.setVisible(true);
         newPanel.setLocation(10, 10);
@@ -241,6 +245,34 @@ public class CustomizableWindow extends javax.swing.JFrame {
         String[] tag = new String[] {""};
         GaugeProperties gp = new GaugeProperties(this, true, gauge, tag);
         gp.setVisible(true);
+        newPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if(evt.getButton() == java.awt.event.MouseEvent.BUTTON3)
+                {
+                    System.out.println("RIGHT CLICK");
+                    JPanel panel = (JPanel)evt.getSource();
+                    CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+                    Component[] components = panel.getComponents();
+                    gauges.get("Time, RPM");
+                
+                    
+                    //Set up all the variables
+                    for(String key : gauges.keySet())
+                    {
+                        if(gauges.get(key) == gauge)
+                        {
+                            System.out.println(key);
+                        }
+                    }
+                   GaugeProperties gp = new GaugeProperties(frame, true, (ScaledRadial)components[0], tag);
+                    
+                    gp.setVisible(true);
+                    System.out.println("test");
+                            
+                }
+            }
+        });
         CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
         cgd.setVisible(true);
         newPanel.add(gauge);
@@ -495,13 +527,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
     private javax.swing.JPanel linear_editPanel;
     private javax.swing.JMenuItem openWindowMenuItem;
     private javax.swing.JPanel radial_editPanel;
-    private javax.swing.JPanel radial_editPanel1;
-    private javax.swing.JPanel radial_editPanel2;
-    private javax.swing.JPanel radial_editPanel3;
-    private javax.swing.JPanel radial_editPanel4;
-    private javax.swing.JPanel radial_editPanel5;
-    private javax.swing.JPanel radial_editPanel6;
-    private javax.swing.JPanel radial_editPanel7;
     private javax.swing.JMenuItem saveWindowMenuItem;
     // End of variables declaration//GEN-END:variables
 }
