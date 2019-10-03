@@ -12,10 +12,13 @@ import eu.hansolo.steelseries.tools.Model;
 import java.awt.Dimension;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.JPanel;
 import pitsoftware.MessageBox;
 import pitsoftware.ScaledLinear;
 import pitsoftware.ScaledRadial;
 import java.awt.Component;
+import java.awt.Container;
+import javax.swing.JFrame;
 
 /**
  *
@@ -570,12 +573,20 @@ public class GaugeProperties extends javax.swing.JDialog {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void deleteButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_deleteButton1MouseClicked
+     
+        
+        Container contentPane = ((JFrame)this.getParent()).getContentPane();
+        Component[] components2 = contentPane.getComponents();
+        for(int i = 1; i < components2.length; i++)
+        {
+            if(((JPanel)components2[i]).getComponents()[0].equals(gauge))
+            {
+                contentPane.remove(components2[i]);
+                contentPane.repaint();
+            }
+        }
         gauge.dispose();
-        Component[] component = this.getParent().getComponents();
-        this.getParent().remove(component[0]);
-        gauge.dispose();
-        this.getParent().repaint();
-        System.out.println("test");
+        this.dispose();
     }//GEN-LAST:event_deleteButton1MouseClicked
 
     private void deleteButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButton1ActionPerformed

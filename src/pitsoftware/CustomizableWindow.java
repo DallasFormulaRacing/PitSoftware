@@ -75,9 +75,10 @@ public class CustomizableWindow extends javax.swing.JFrame {
         editPanelMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("CustomizeableWindow");
         setSize(new java.awt.Dimension(1375, 800));
 
-        editPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder(0, java.awt.Color.black, java.awt.Color.black));
+        editPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED, java.awt.Color.black, java.awt.Color.black));
 
         radial_editPanel.setBackground(new java.awt.Color(255, 255, 255));
         radial_editPanel.addMouseListener(new java.awt.event.MouseAdapter() {
