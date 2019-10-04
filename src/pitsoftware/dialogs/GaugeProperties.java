@@ -95,11 +95,17 @@ public class GaugeProperties extends javax.swing.JDialog {
 
         tagList.setSelectedValue(tag, modal);
         
-        if(gauge instanceof ScaledRadial) 
+        if(gauge instanceof ScaledRadial)
+        {
             scaleField.setText(""+((ScaledRadial) gauge).getScale());
+            if( !((ScaledRadial) gauge).getTag().equals(""))
+                tagList.setSelectedValue(((ScaledRadial) gauge).getTag(), true);
+        }
         else if (gauge instanceof ScaledLinear)
         {
             scaleField.setText(""+((ScaledLinear) gauge).getScale());
+            if( !((ScaledLinear) gauge).getTag().equals("") )
+                tagList.setSelectedValue(((ScaledLinear) gauge).getTag(), true);
             if(gauge.getWidth() < gauge.getHeight())
                 sizeField.setText("" + (int)gauge.getSize().getWidth());
         }
@@ -531,8 +537,10 @@ public class GaugeProperties extends javax.swing.JDialog {
             gauge.setSize(size);
             gauge.getParent().setSize(size);
             ((ScaledRadial) gauge).setScale(scale);
+            ((ScaledRadial) gauge).setTag(TAG[0]);
         } else if (gauge instanceof ScaledLinear) {
             ((ScaledLinear) gauge).setScale(scale);
+            ((ScaledLinear) gauge).setTag(TAG[0]);
             if(gauge.getWidth() > gauge.getHeight()) {
                 gauge.setSize(size.width, 100);
                 gauge.getParent().setPreferredSize(gauge.getSize());
