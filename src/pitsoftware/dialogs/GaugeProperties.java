@@ -9,6 +9,7 @@ import eu.hansolo.steelseries.gauges.AbstractGauge;
 import eu.hansolo.steelseries.gauges.Linear;
 import eu.hansolo.steelseries.gauges.Radial;
 import eu.hansolo.steelseries.tools.Model;
+import pitsoftware.CustomizableWindow;
 import java.awt.Dimension;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -81,24 +82,27 @@ public class GaugeProperties extends javax.swing.JDialog {
             }
         });
         
-        //If Gauge is already filled out
+        //Set fields in the window to the values that are stored in the gauge
         titleField.setText(gauge.getTitle());
         unitField.setText(gauge.getUnitString());
-        sizeField.setText("" + (int)gauge.getSize().getHeight());
-        minField.setText("" + (int)gauge.getMinValue());
-        maxField.setText("" + (int)gauge.getMaxValue());
-        warningField.setText(""+ (int)gauge.getThreshold());
+        sizeField.setText("" + (int)gauge.getSize().getWidth());
+        minField.setText("" + gauge.getMinValue());
+        maxField.setText("" + gauge.getMaxValue());
+        warningField.setText(""+ gauge.getThreshold());
         invertThresholdCheckBox.setSelected(gauge.isThresholdBehaviourInverted());
-        redlineMinField.setText("" + (int)gauge.getTrackStart());
-        redlineMaxField.setText("" + (int)gauge.getTrackStop());
-        //Model model = gauge.getModel()
+        redlineMinField.setText("" + gauge.getTrackStart());
+        redlineMaxField.setText("" + gauge.getTrackStop());
 
         tagList.setSelectedValue(tag, modal);
         
         if(gauge instanceof ScaledRadial) 
             scaleField.setText(""+((ScaledRadial) gauge).getScale());
         else if (gauge instanceof ScaledLinear)
+        {
             scaleField.setText(""+((ScaledLinear) gauge).getScale());
+            if(gauge.getWidth() < gauge.getHeight())
+                sizeField.setText("" + (int)gauge.getSize().getWidth());
+        }
         
         
     }
@@ -136,7 +140,7 @@ public class GaugeProperties extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         tagList = new javax.swing.JList<>();
         jLabel6 = new javax.swing.JLabel();
-        cancelButton1 = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -228,11 +232,6 @@ public class GaugeProperties extends javax.swing.JDialog {
         });
 
         cancelButton.setText("Cancel");
-        cancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                cancelButtonMouseClicked(evt);
-            }
-        });
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -248,15 +247,10 @@ public class GaugeProperties extends javax.swing.JDialog {
 
         jLabel6.setText("TAG");
 
-        cancelButton1.setText("Delete");
-        cancelButton1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                deleteButton1MouseClicked(evt);
-            }
-        });
-        cancelButton1.addActionListener(new java.awt.event.ActionListener() {
+        deleteButton.setText("Delete");
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteButton1ActionPerformed(evt);
+                deleteButtonActionPerformed(evt);
             }
         });
 
@@ -265,9 +259,9 @@ public class GaugeProperties extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -312,7 +306,7 @@ public class GaugeProperties extends javax.swing.JDialog {
                                 .addGap(112, 112, 112)))
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(cancelButton1)
+                        .addComponent(deleteButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(cancelButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -362,11 +356,10 @@ public class GaugeProperties extends javax.swing.JDialog {
                         .addGap(10, 10, 10)
                         .addComponent(jScrollPane1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cancelButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(createButton)
-                        .addComponent(cancelButton)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(createButton)
+                    .addComponent(cancelButton)
+                    .addComponent(deleteButton))
                 .addContainerGap())
         );
 
@@ -564,34 +557,30 @@ public class GaugeProperties extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_createButtonActionPerformed
 
-    private void cancelButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelButtonMouseClicked
-        this.dispose(); 
-    }//GEN-LAST:event_cancelButtonMouseClicked
-
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_cancelButtonActionPerformed
-
-    private void deleteButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_deleteButton1MouseClicked
-     
-        
+        CustomizableWindow frame = ((CustomizableWindow)this.getParent());
         Container contentPane = ((JFrame)this.getParent()).getContentPane();
-        Component[] components2 = contentPane.getComponents();
-        for(int i = 1; i < components2.length; i++)
+        Component[] components = contentPane.getComponents();
+        for(int i = 1; i < components.length; i++)
         {
-            if(((JPanel)components2[i]).getComponents()[0].equals(gauge))
+            if(((JPanel)components[i]).getComponents()[0].equals(gauge))
             {
-                contentPane.remove(components2[i]);
+                contentPane.remove(components[i]);
                 contentPane.repaint();
             }
         }
+        frame.setCancel(true);
         gauge.dispose();
         this.dispose();
-    }//GEN-LAST:event_deleteButton1MouseClicked
+    }//GEN-LAST:event_deleteButtonActionPerformed
 
-    private void deleteButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButton1ActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_deleteButton1ActionPerformed
+        CustomizableWindow frame = ((CustomizableWindow)this.getParent());
+        frame.setCancel(true);
+        this.dispose();
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -637,8 +626,8 @@ public class GaugeProperties extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
-    private javax.swing.JButton cancelButton1;
     private javax.swing.JButton createButton;
+    private javax.swing.JButton deleteButton;
     private javax.swing.JCheckBox invertThresholdCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;

@@ -43,6 +43,14 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         this.gauge = gauge;
         setupLists();
         displayGauge();
+        
+        //Show the Gauge's current customizations as selected
+        frameDesignsList.setSelectedIndex(gauge.getFrameDesign().ordinal());
+        backgroundsList.setSelectedIndex(gauge.getBackgroundColor().ordinal());
+        ledsList.setSelectedIndex(gauge.getLedColor().ordinal());
+        pointerList.setSelectedIndex(gauge.getPointerColor().ordinal());
+        lcdList.setSelectedIndex(gauge.getLcdColor().ordinal());
+        
     }
     
     private void setupLists() {
@@ -50,6 +58,7 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         for(int i = 0; i < values.length - 1; i++) {
             values[i] = ""+FrameDesign.values()[i];
         }
+        
         frameDesignsList.setListData(values);
         frameDesignsList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -146,7 +155,6 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
 
         gaugePanel.setBackground(new java.awt.Color(255, 255, 255));
         gaugePanel.setPreferredSize(new java.awt.Dimension(300, 300));
-        gaugePanel.setSize(new java.awt.Dimension(300, 300));
 
         javax.swing.GroupLayout gaugePanelLayout = new javax.swing.GroupLayout(gaugePanel);
         gaugePanel.setLayout(gaugePanelLayout);
@@ -261,7 +269,7 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(gaugePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(applyButton)
                     .addComponent(cancelButton))
