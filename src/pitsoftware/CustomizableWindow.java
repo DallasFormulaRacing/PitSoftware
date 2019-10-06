@@ -6,8 +6,6 @@
 package pitsoftware;
 
 import eu.hansolo.steelseries.gauges.*;
-import eu.hansolo.steelseries.tools.LedColor;
-import eu.hansolo.steelseries.tools.Orientation;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
