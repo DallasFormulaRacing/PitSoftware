@@ -7,8 +7,6 @@ package pitsoftware;
 
 import com.orsoncharts.util.json.JSONObject;
 import eu.hansolo.steelseries.gauges.*;
-import eu.hansolo.steelseries.tools.LedColor;
-import eu.hansolo.steelseries.tools.Orientation;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -16,6 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import java.awt.Component;
 import pitsoftware.dialogs.CustomizeGaugeDialog;
 import pitsoftware.dialogs.GaugeProperties;
 
@@ -35,6 +35,8 @@ public class CustomizableWindow extends javax.swing.JFrame {
     boolean addingLinear;
     //Holds the data and gauges
     Logger logger;
+    //True if the cancel or delete button was pressed
+    boolean cancel;
     
     /**
      * Creates new form CustomizableWindow
@@ -47,6 +49,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
         editing = false;
         addingRadial = false;
         addingLinear = false;
+        cancel = false;
         editPanel.setVisible(false);
         //generate images for edit panel
         generateEditPanel();
@@ -75,7 +78,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
         editPanelMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setResizable(false);
         setSize(new java.awt.Dimension(1375, 800));
 
         editPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED, java.awt.Color.black, java.awt.Color.black));
@@ -242,21 +244,86 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 }
             }
         });
+        
         this.add(newPanel);
         newPanel.setVisible(true);
         newPanel.setLocation(10, 10);
         ScaledRadial gauge = (ScaledRadial) createCircularGauge("", "", "", new Dimension(200, 200), 0, 100, 0, false, 0, 0, newPanel);
         String[] tag = new String[] {""};
+        
         GaugeProperties gp = new GaugeProperties(this, true, gauge, tag);
         gp.setVisible(true);
-        CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
-        cgd.setVisible(true);
-        newPanel.add(gauge);
-        logger.addGauge(tag[0], gauge);
+        newPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if(editing)
+                {
+                    if(evt.getButton() == java.awt.event.MouseEvent.BUTTON3)
+                    {  
+                        JPanel panel = (JPanel)evt.getSource();
+                        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+                        frame.updateGauge(evt, gauge, panel, tag);
+                    }
+                }
+            }
+        });
+        if(cancel == false)
+        {
+            CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
+            cgd.setVisible(true);
+            newPanel.add(gauge);
+            gauges.put(tag[0], gauge);
+        }
+        else
+        {
+            gauge.dispose();
+            this.remove(newPanel);
+        }
+        cancel = false;
         repaint();
 
     }//GEN-LAST:event_radial_editPanelMouseClicked
-
+    
+    public void updateGauge(java.awt.event.MouseEvent evt, AbstractGauge gauge, JPanel newPanel, String[] tag)
+    {
+                        /*
+                            Store the previous tag so we can remove it from
+                        the gauges treemap later on
+                        */
+                        String oldTag = tag[0];
+                        /*
+                            Remove at the start incase they decide to delete the gauge
+                        as it makes it a lot easier to deal with
+                        */
+                        gauges.remove(oldTag, gauge);
+                        
+                        JPanel panel = (JPanel)evt.getSource();
+                        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+                        Component[] components = panel.getComponents();
+                        GaugeProperties gp = new GaugeProperties(frame, true, (AbstractGauge)components[0], tag);
+                        gp.setVisible(true);
+                        //Don't prompt the user for gauge customizations if gauge is deleted
+                        if(gauge instanceof ScaledRadial && cancel==false && gauge.isDisplayable())
+                        {
+                            CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(frame, true, (ScaledRadial)gauge);
+                            cgd.setVisible(true);
+                            newPanel.add(gauge);
+                            if(oldTag.equals(tag[0]))
+                                gauges.put(tag[0], gauge);
+                            else
+                            {
+                               gauges.remove(oldTag, gauge);
+                               gauges.put(tag[0], gauge);
+                            }
+                         }
+                        //If the gauge was canceled but not deleted add gauge back to gauges
+                        else if(cancel == true && gauge.isDisplayable())
+                            gauges.put(tag[0], gauge);
+                        
+                        cancel = false;
+                        repaint();
+    }
+    
     private void saveWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveWindowMenuItemActionPerformed
         //JSON object that goes to file
         JSONObject toFile = new JSONObject();
@@ -319,12 +386,35 @@ public class CustomizableWindow extends javax.swing.JFrame {
         String[] tag = new String[] {""};
         GaugeProperties gp = new GaugeProperties(this, true, gauge, tag);
         gp.setVisible(true);
-
+        newPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if(editing)
+                {
+                    if(evt.getButton() == java.awt.event.MouseEvent.BUTTON3)
+                    {  
+                        JPanel panel = (JPanel)evt.getSource();
+                        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+                        frame.updateGauge(evt, gauge, panel, tag); 
+                    }
+                }
+            }
+        });
+        
         //TODO: NEW custom dialog
         // CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
         //cgd.setVisible(true);
-        newPanel.add(gauge);
-        logger.addGauge(tag[0], gauge);
+        if(cancel == false)
+        {
+            newPanel.add(gauge);
+            gauges.put(tag[0], gauge);
+        }
+        else
+        {
+            gauge.dispose();
+            this.remove(newPanel);
+        }
+        cancel = false;
         repaint();
     }//GEN-LAST:event_linear_editPanelMouseClicked
 
@@ -376,7 +466,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
         parent.setSize(size);
         //add the gauge to the panel
         parent.add(gauge);
-        gauges.put(TAG, gauge);
         
         return gauge;
     }
@@ -450,6 +539,11 @@ public class CustomizableWindow extends javax.swing.JFrame {
         
         return gauge;
     }
+    
+    public void setCancel(boolean cancel) {
+        this.cancel = cancel;
+    }
+    
     
     /**
      * @param args the command line arguments

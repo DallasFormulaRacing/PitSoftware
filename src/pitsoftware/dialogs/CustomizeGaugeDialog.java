@@ -43,6 +43,14 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         this.gauge = gauge;
         setupLists();
         displayGauge();
+        
+        //Show the Gauge's current customizations as selected
+        frameDesignsList.setSelectedIndex(gauge.getFrameDesign().ordinal());
+        backgroundsList.setSelectedIndex(gauge.getBackgroundColor().ordinal());
+        ledsList.setSelectedIndex(gauge.getLedColor().ordinal());
+        pointerList.setSelectedIndex(gauge.getPointerColor().ordinal());
+        lcdList.setSelectedIndex(gauge.getLcdColor().ordinal());
+        
     }
     
     private void setupLists() {
@@ -50,6 +58,7 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         for(int i = 0; i < values.length - 1; i++) {
             values[i] = ""+FrameDesign.values()[i];
         }
+        
         frameDesignsList.setListData(values);
         frameDesignsList.addListSelectionListener(new ListSelectionListener() {
             @Override
