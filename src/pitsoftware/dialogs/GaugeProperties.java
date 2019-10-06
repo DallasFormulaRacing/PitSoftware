@@ -9,6 +9,7 @@ import eu.hansolo.steelseries.gauges.AbstractGauge;
 import eu.hansolo.steelseries.gauges.Linear;
 import eu.hansolo.steelseries.gauges.Radial;
 import eu.hansolo.steelseries.tools.Model;
+import java.awt.Color;
 import pitsoftware.CustomizableWindow;
 import java.awt.Dimension;
 import javax.swing.event.ListSelectionEvent;
@@ -90,8 +91,10 @@ public class GaugeProperties extends javax.swing.JDialog {
         maxField.setText("" + gauge.getMaxValue());
         warningField.setText(""+ gauge.getThreshold());
         invertThresholdCheckBox.setSelected(gauge.isThresholdBehaviourInverted());
-        redlineMinField.setText("" + gauge.getTrackStart());
-        redlineMaxField.setText("" + gauge.getTrackStop());
+        if(gauge.isTrackVisible()) {
+            redlineMinField.setText("" + gauge.getTrackStart());
+            redlineMaxField.setText("" + gauge.getTrackStop());
+        }
 
         tagList.setSelectedValue(tag, modal);
         
@@ -560,6 +563,9 @@ public class GaugeProperties extends javax.swing.JDialog {
         if(!(redmin == 0 && redmax == 0)) {
             gauge.setTrackStart(redmin);
             gauge.setTrackStop(redmax);
+            gauge.setTrackStartColor(Color.RED);
+            gauge.setTrackStopColor(Color.RED);
+            gauge.setTrackVisible(true);
         }
         
         this.dispose();
