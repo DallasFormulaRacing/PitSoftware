@@ -69,7 +69,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
         editPanel = new javax.swing.JPanel();
         radial_editPanel = new javax.swing.JPanel();
         linear_editPanel = new javax.swing.JPanel();
-        linearVert_editPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openWindowMenuItem = new javax.swing.JMenuItem();
@@ -119,25 +118,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
             .addGap(0, 100, Short.MAX_VALUE)
         );
 
-        linearVert_editPanel.setBackground(new java.awt.Color(255, 255, 255));
-        linearVert_editPanel.setPreferredSize(new java.awt.Dimension(99, 100));
-        linearVert_editPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                linearVert_editPanelMouseClicked(evt);
-            }
-        });
-
-        javax.swing.GroupLayout linearVert_editPanelLayout = new javax.swing.GroupLayout(linearVert_editPanel);
-        linearVert_editPanel.setLayout(linearVert_editPanelLayout);
-        linearVert_editPanelLayout.setHorizontalGroup(
-            linearVert_editPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 99, Short.MAX_VALUE)
-        );
-        linearVert_editPanelLayout.setVerticalGroup(
-            linearVert_editPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-
         javax.swing.GroupLayout editPanelLayout = new javax.swing.GroupLayout(editPanel);
         editPanel.setLayout(editPanelLayout);
         editPanelLayout.setHorizontalGroup(
@@ -148,7 +128,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 .addGap(19, 19, 19)
                 .addComponent(linear_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(linearVert_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 1135, Short.MAX_VALUE))
         );
         editPanelLayout.setVerticalGroup(
@@ -156,8 +135,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
             .addGroup(editPanelLayout.createSequentialGroup()
                 .addGroup(editPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(radial_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(linear_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(linearVert_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(linear_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -423,9 +401,8 @@ public class CustomizableWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_openWindowMenuItemActionPerformed
 
     private void generateEditPanel() {
-        createCircularGauge("Engine RPM", "RPMx1K", "RPM", new Dimension(100,100), 1000, 0, 14, 12, false, 10.5, 14, radial_editPanel).setValue(7);
-        createLinearGauge("BrakeFront", "PSIx1k", "PSI", new Dimension(200,100), 1, 0, 2, 1, false, 1, 2, linear_editPanel).setValue(.9);
-        createLinearGauge("BrakeRear", "PSIx1k", "PSI", new Dimension(99,100), 1, 0, 2, 1, false, 1, 2, linearVert_editPanel).setValue(.9);
+        createCircularGauge("Engine RPM", "RPMx1K", "", new Dimension(100,100), 1000, 0, 14, 12, false, 10.5, 14, radial_editPanel).setValue(7);
+        createLinearGauge("BrakeFront", "PSIx1k", "", new Dimension(200,100), 1, 0, 2, 1, false, 1, 2, linear_editPanel).setValue(.9);
     }
     
     //create with default scale
@@ -586,7 +563,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem editPanelMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JPanel linearVert_editPanel;
     private javax.swing.JPanel linear_editPanel;
     private javax.swing.JMenuItem openWindowMenuItem;
     private javax.swing.JPanel radial_editPanel;
