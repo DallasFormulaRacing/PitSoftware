@@ -28,6 +28,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import static pitsoftware.MainWindow.logStartTime;
+import pitsoftware.MessageBox;
 
 /**
  *
@@ -92,7 +93,7 @@ public class MainWindow extends javax.swing.JFrame {
             
             //if reader failed
             if(reader == null) {
-                new MessageBox("Couldn't find file!").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "Does that look like a fucking number to you?\nEnter a real number.", true);
                 return;
             }
             
@@ -598,7 +599,8 @@ public class MainWindow extends javax.swing.JFrame {
     //on start button pressed
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         if(pyFilepath.isEmpty()) {
-            new MessageBox("Please select a python file from File>Find Python File.").setVisible(true);
+            new MessageBox(new javax.swing.JFrame(), "Please select a python file from File>Find Python File.", true);
+
         }
         else {
             isRunning = !isRunning;
@@ -609,10 +611,10 @@ public class MainWindow extends javax.swing.JFrame {
                     Thread.sleep(250);
                 } catch (IOException ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                    new MessageBox("Error running python file").setVisible(true);
+                     new MessageBox(new javax.swing.JFrame(), "Error running python file", true);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                    new MessageBox("Interrupted Exception").setVisible(true);
+                    new MessageBox(new javax.swing.JFrame(), "Interrupted Exception", true).setVisible(true);
                 }
                 startButton.setText("STOP THIS BITCH!"); 
                 logStartTime = System.currentTimeMillis();

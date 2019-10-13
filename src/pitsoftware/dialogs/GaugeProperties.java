@@ -372,15 +372,20 @@ public class GaugeProperties extends javax.swing.JDialog {
 
     private void sizeFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_sizeFieldFocusLost
         if(sizeField.getText().isEmpty())
-            new MessageBox("Enter a size.\nDefault size is 200.\nRadialGauge at Bottom is 100 for reference.").setVisible(true);
+            //new MessageBox("Enter a size.\nDefault size is 200.\nRadialGauge at Bottom is 100 for reference.").setVisible(true);
+            new MessageBox(this, "Enter a size.\\nDefault size is 200.\\nRadialGauge at Bottom is 100 for reference.", true);
+
         else {
             try {
                 int attemptParse;
                 attemptParse = Integer.parseInt(sizeField.getText());
                 if(attemptParse == 0)
-                    new MessageBox("Nice try.\nPlease give it a size.").setVisible(true);
+                    //new MessageBox("Nice try.\nPlease give it a size.").setVisible(true);
+                    new MessageBox(this, "Nice try.\\nPlease give it a size.", true);
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                //new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                new MessageBox(this, "Does that look like a fucking number to you?\nEnter a real number.", true);
+                
                 sizeField.requestFocus();
             }
         }
@@ -388,15 +393,19 @@ public class GaugeProperties extends javax.swing.JDialog {
 
     private void scaleFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_scaleFieldFocusLost
         if(scaleField.getText().isEmpty())
-            new MessageBox("Enter a scale.\nA scale is like an rpm gauge showing 4 while the real value is 4000.\nThe scale is 1000x in this case.").setVisible(true);
+            //new MessageBox("Enter a scale.\nA scale is like an rpm gauge showing 4 while the real value is 4000.\nThe scale is 1000x in this case.").setVisible(true);
+            new MessageBox(this, "Enter a scale.\\nA scale is like an rpm gauge showing 4 while the real value is 4000.\\nThe scale is 1000x in this case.", true);
+
         else {
             try {
                 double attemptParse;
                 attemptParse = Double.parseDouble(scaleField.getText());
                 if(attemptParse == 0)
-                    new MessageBox("Nice try.\nPlease give it a size.").setVisible(true);
+                    //new MessageBox("Nice try.\nPlease give it a size.").setVisible(true);
+                    new MessageBox(this, "Nice try.\\nPlease give it a size.", true);
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                //new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                new MessageBox(this, "Does that look like a fucking number to you?\\nEnter a real number.", true);
                 scaleField.requestFocus();
             }
         }
@@ -404,13 +413,16 @@ public class GaugeProperties extends javax.swing.JDialog {
 
     private void minFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_minFieldFocusLost
         if(minField.getText().isEmpty())
-            new MessageBox("Enter a min number. Leave 0 for default.").setVisible(true);
+            //new MessageBox("Enter a min number. Leave 0 for default.").setVisible(true);
+            new MessageBox(new javax.swing.JFrame(), "Does that look like a fucking number to you?\nEnter a real number.", true);
+
         else {
             try {
                 double attemptParse;
                 attemptParse = Double.parseDouble(minField.getText());
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                //new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "Enter a min number. Leave 0 for default.", true);
                 minField.requestFocus();
             }
         }
@@ -418,13 +430,15 @@ public class GaugeProperties extends javax.swing.JDialog {
 
     private void maxFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_maxFieldFocusLost
         if(maxField.getText().isEmpty())
-            new MessageBox("Enter a min number. Leave 100 for default autoscale.").setVisible(true);
+            //new MessageBox("Enter a min number. Leave 100 for default autoscale.").setVisible(true);
+            new MessageBox(new javax.swing.JFrame(), "Enter a min number. Leave 0 for default.", true);
         else {
             try {
                 double attemptParse;
                 attemptParse = Double.parseDouble(maxField.getText());
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                //new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+            new MessageBox(new javax.swing.JFrame(), "Does that look like a fucking number to you?\nEnter a real number.", true);                
                 maxField.requestFocus();
             }
         }
@@ -436,7 +450,9 @@ public class GaugeProperties extends javax.swing.JDialog {
                 double attemptParse;
                 attemptParse = Double.parseDouble(maxField.getText());
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                //new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "Does that look like a fucking number to you?\nEnter a real number.", true);                
+
                 maxField.requestFocus();
             }
         }
@@ -448,7 +464,8 @@ public class GaugeProperties extends javax.swing.JDialog {
                 double attemptParse;
                 attemptParse = Double.parseDouble(redlineMinField.getText());
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                //new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "Does that look like a fucking number to you?\nEnter a real number.", true);                
                 redlineMinField.requestFocus();
             }
         }
@@ -460,7 +477,8 @@ public class GaugeProperties extends javax.swing.JDialog {
                 double attemptParse;
                 attemptParse = Double.parseDouble(redlineMaxField.getText());
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                //new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "Does that look like a fucking number to you?\nEnter a real number.", true);                
                 redlineMaxField.requestFocus();
             }
         }
@@ -501,7 +519,9 @@ public class GaugeProperties extends javax.swing.JDialog {
         //check for errors
         if(min > max) {
             if(max != 100) {
-                new MessageBox("The stop can't happen after the start.\nAre you even thinking dumbass?\nRe-enter proper values.").setVisible(true);
+                //new MessageBox("The stop can't happen after the start.\nAre you even thinking dumbass?\nRe-enter proper values.").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "The stop can't happen after the start.\nAre you even thinking dumbass?\nRe-enter proper values.", true);                
+
                 minField.setText("");
                 maxField.setText("");
                 return;
@@ -509,22 +529,26 @@ public class GaugeProperties extends javax.swing.JDialog {
         }
         if(redmin != 0 || redmax != 0) {
             if(redmin > redmax) {
-                new MessageBox("The stop can't happen after the start.\nAre you even thinking dumbass?\nRe-enter proper values.").setVisible(true);
+                //new MessageBox("The stop can't happen after the start.\nAre you even thinking dumbass?\nRe-enter proper values.").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "The stop can't happen after the start.\nAre you even thinking dumbass?\nRe-enter proper values.", true);
                 redlineMinField.setText("");
                 redlineMaxField.setText("");
                 return;
             }
             if(redmin < min) {
-                new MessageBox("The redline cannot start before the minimum value of the gauge.").setVisible(true);
+                //new MessageBox("The redline cannot start before the minimum value of the gauge.").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "The redline cannot start before the minimum value of the gauge.", true);
                 return;
             }
             if(redmax > max) {
-                new MessageBox("The redline cannot end after the maximum value of the gauge.").setVisible(true);
+                //new MessageBox("The redline cannot end after the maximum value of the gauge.").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "The redline cannot start before the minimum value of the gauge.", true);
                 return;
             }
         }
         if(TAG[0].isEmpty()) {
-            new MessageBox("Please select a tag.").setVisible(true);
+            //new MessageBox("Please select a tag.").setVisible(true);
+            new MessageBox(new javax.swing.JFrame(), "Please select a tag.", true);
             return;
         }
         
