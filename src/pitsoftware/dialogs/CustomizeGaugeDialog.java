@@ -12,6 +12,7 @@ import eu.hansolo.steelseries.tools.LcdColor;
 import eu.hansolo.steelseries.tools.LedColor;
 import eu.hansolo.steelseries.tools.LedType;
 import eu.hansolo.steelseries.tools.PointerType;
+import java.awt.Dimension;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -26,6 +27,7 @@ import pitsoftware.ScaledRadial;
 public class CustomizeGaugeDialog extends javax.swing.JDialog {
 
     ScaledRadial gauge;
+    Dimension oldSize;
     /**
      * Creates new form CustomizeGaugeDialog
      */
@@ -41,6 +43,8 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.gauge = gauge;
+        oldSize = gauge.getSize();
+        gauge.setSize(new Dimension(200, 200));
         setupLists();
         displayGauge();
         
@@ -301,10 +305,12 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
+        gauge.setSize(oldSize);
         this.dispose();
     }//GEN-LAST:event_applyButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        gauge.setSize(oldSize);
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
