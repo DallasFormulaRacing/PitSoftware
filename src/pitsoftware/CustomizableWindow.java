@@ -6,7 +6,12 @@
 package pitsoftware;
 
 import com.orsoncharts.util.json.JSONObject;
+import javax.json.stream.JsonParser;
 import eu.hansolo.steelseries.gauges.*;
+import eu.hansolo.steelseries.tools.ColorDef;
+import eu.hansolo.steelseries.tools.FrameDesign;
+import eu.hansolo.steelseries.tools.LcdColor;
+import eu.hansolo.steelseries.tools.LedColor;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -16,7 +21,17 @@ import java.util.TreeMap;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.logging.Level;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import pitsoftware.dialogs.CustomizeGaugeDialog;
 import pitsoftware.dialogs.GaugeProperties;
 
@@ -225,13 +240,15 @@ public class CustomizableWindow extends javax.swing.JFrame {
             editPanel.setVisible(false);
             editPanelMenuItem.setText("Enable Editing");
         }
+        for(Component a : ((JPanel)((javax.swing.JRootPane)this.getComponents()[0]).getComponents()[0]).getComponents())
+        {
+            System.out.println(a.getLocation());
+            System.out.println(a.getClass());
+        }
     }                                                 
-
-    private void radial_editPanelMouseClicked(java.awt.event.MouseEvent evt) {                                              
-        //Create new panel that can be moved
-        //ask for properties: Title, Unit, generate TAG, size, scale, min, max, threshold, invertthreshhold, trackstart, trackstop
-        JPanel newPanel = new JPanel();
-        newPanel.setSize(100,100);
+    private void addEventListeners(JPanel newPanel, AbstractGauge gauge)
+    {
+        String[] tag = new String[] {""};
         newPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             @Override
             public void mouseDragged(java.awt.event.MouseEvent evt) {
@@ -245,15 +262,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 }
             }
         });
-        
-        this.add(newPanel);
-        newPanel.setVisible(true);
-        newPanel.setLocation(10, 10);
-        ScaledRadial gauge = (ScaledRadial) createCircularGauge("", "", "", new Dimension(200, 200), 0, 100, 0, false, 0, 0, newPanel);
-        String[] tag = new String[] {""};
-        
-        GaugeProperties gp = new GaugeProperties(this, true, gauge, tag);
-        gp.setVisible(true);
         newPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -268,6 +276,22 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 }
             }
         });
+    }
+    
+    private void radial_editPanelMouseClicked(java.awt.event.MouseEvent evt) {                                              
+        //Create new panel that can be moved
+        //ask for properties: Title, Unit, generate TAG, size, scale, min, max, threshold, invertthreshhold, trackstart, trackstop
+        JPanel newPanel = new JPanel();
+        newPanel.setSize(100,100);
+        this.add(newPanel);
+        newPanel.setVisible(true);
+        newPanel.setLocation(10, 10);
+        ScaledRadial gauge = (ScaledRadial) createCircularGauge("", "", "", new Dimension(200, 200), 0, 100, 0, false, 0, 0, newPanel);
+        String[] tag = new String[] {""};
+        addEventListeners(newPanel, gauge);
+        GaugeProperties gp = new GaugeProperties(this, true, gauge, tag);
+        gp.setVisible(true);
+        
         if(cancel == false)
         {
             CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
@@ -287,42 +311,42 @@ public class CustomizableWindow extends javax.swing.JFrame {
     
     public void updateGauge(java.awt.event.MouseEvent evt, AbstractGauge gauge, JPanel newPanel, String[] tag)
     {
-                        /*
-                            Store the previous tag so we can remove it from
-                        the gauges treemap later on
-                        */
-                        String oldTag = tag[0];
-                        /*
-                            Remove at the start incase they decide to delete the gauge
-                        as it makes it a lot easier to deal with
-                        */
-                        gauges.remove(oldTag, gauge);
-                        
-                        JPanel panel = (JPanel)evt.getSource();
-                        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
-                        Component[] components = panel.getComponents();
-                        GaugeProperties gp = new GaugeProperties(frame, true, (AbstractGauge)components[0], tag);
-                        gp.setVisible(true);
-                        //Don't prompt the user for gauge customizations if gauge is deleted
-                        if(gauge instanceof ScaledRadial && cancel==false && gauge.isDisplayable())
-                        {
-                            CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(frame, true, (ScaledRadial)gauge);
-                            cgd.setVisible(true);
-                            newPanel.add(gauge);
-                            if(oldTag.equals(tag[0]))
-                                gauges.put(tag[0], gauge);
-                            else
-                            {
-                               gauges.remove(oldTag, gauge);
-                               gauges.put(tag[0], gauge);
-                            }
-                         }
-                        //If the gauge was canceled but not deleted add gauge back to gauges
-                        else if(cancel == true && gauge.isDisplayable())
-                            gauges.put(tag[0], gauge);
-                        
-                        cancel = false;
-                        repaint();
+        /*
+            Store the previous tag so we can remove it from
+        the gauges treemap later on
+        */
+        String oldTag = tag[0];
+        /*
+            Remove at the start incase they decide to delete the gauge
+        as it makes it a lot easier to deal with
+        */
+        gauges.remove(oldTag, gauge);
+
+        JPanel panel = (JPanel)evt.getSource();
+        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+        Component[] components = panel.getComponents();
+        GaugeProperties gp = new GaugeProperties(frame, true, (AbstractGauge)components[0], tag);
+        gp.setVisible(true);
+        //Don't prompt the user for gauge customizations if gauge is deleted
+        if(gauge instanceof ScaledRadial && cancel==false && gauge.isDisplayable())
+        {
+            CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(frame, true, (ScaledRadial)gauge);
+            cgd.setVisible(true);
+            newPanel.add(gauge);
+            if(oldTag.equals(tag[0]))
+                gauges.put(tag[0], gauge);
+            else
+            {
+               gauges.remove(oldTag, gauge);
+               gauges.put(tag[0], gauge);
+            }
+         }
+        //If the gauge was canceled but not deleted add gauge back to gauges
+        else if(cancel == true && gauge.isDisplayable())
+            gauges.put(tag[0], gauge);
+
+        cancel = false;
+        repaint();
     }
     
     private void saveWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {                                                   
@@ -330,17 +354,19 @@ public class CustomizableWindow extends javax.swing.JFrame {
         JSONObject toFile = new JSONObject();
         
         //for each gauge
-        for(String key : logger.gauges.keySet()) {
+        for(String key : gauges.keySet()) {
             //get the gauge
-            AbstractGauge o = logger.gauges.get(key);
+            System.out.println(gauges.get(key));
+            AbstractGauge o = (AbstractGauge)gauges.get(key);
             //if its a Radial
             if(o instanceof ScaledRadial) {
                 //create its JSONObject within the json and put in the json file
-                Map m = new LinkedHashMap(14);
+                Map m = new LinkedHashMap(18);
                 m.put("title", o.getTitle());
                 m.put("type", "SR");
                 m.put("unit", o.getUnitString());
                 m.put("location", o.getParent().getX() + "," + o.getParent().getY());
+                m.put("size", o.getParent().getSize().height);
                 m.put("scale", ((ScaledRadial) o).getScale());
                 m.put("range", o.getMinValue() + "," + o.getMaxValue());
                 m.put("threshold", o.getThreshold());
@@ -351,40 +377,23 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 m.put("led", o.getLedColor().toString());
                 m.put("pointer", ((ScaledRadial) o).getPointerColor().toString());
                 m.put("lcd", ((ScaledRadial) o).getLcdColor().toString());
+                m.put("redline", o.getTrackStart() + "," + o.getTrackStop());
+                m.put("redline_color", o.getTrackStartColor().getRGB() + "," + o.getTrackStopColor().getRGB());
+                m.put("redline_visible", o.isTrackVisible());
                 toFile.put(key, m);
             }
             else if(o instanceof ScaledLinear) {
             }
         }
-    }                                                  
-    
-    private void loadGauges(ArrayList<AbstractGauge> gaugeArr, ArrayList<String> locations)
-    {
-        for(int i = 0; i < gaugeArr.size(); i++)
-        {
-            JPanel newPanel = new JPanel();
-            if(gaugeArr.get(i) instanceof ScaledRadial)
-            {  
-                ScaledRadial gauge = (ScaledRadial)gaugeArr.get(i);
-                int x = Integer.parseInt(locations.get(i).split(",")[0]);
-                int y = Integer.parseInt(locations.get(i).split(",")[1]);
-                newPanel.setSize(gauge.getSize());
-                newPanel.setLocation(x, y);
-                newPanel.setVisible(true);
-                
-            } else if(gaugeArr.get(i) instanceof ScaledLinear)
-            {
-                ScaledLinear gauge = (ScaledLinear)gaugeArr.get(i);
-                int x = Integer.parseInt(locations.get(i).split(",")[0]);
-                int y = Integer.parseInt(locations.get(i).split(",")[1]);
-                newPanel.setSize(gauge.getSize());
-                newPanel.setLocation(x, y);
-                newPanel.setVisible(true);
-            }
-            this.add(newPanel);
+        try {
+            String json = toFile.toJSONString();
+            BufferedWriter writer = new BufferedWriter(new FileWriter("data.txt"));
+            writer.write(json);
+            writer.close();
+        } catch(IOException e){
+            e.printStackTrace();
         }
-        this.repaint();
-    }
+    }                                                  
     
     private void linearVert_editPanelMouseClicked(java.awt.event.MouseEvent evt) {                                                  
         // TODO add your handling code here:
@@ -449,12 +458,60 @@ public class CustomizableWindow extends javax.swing.JFrame {
 
     private void openWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {                                                   
         // TODO add your handling code here:
+       try {
+            JsonReader read = Json.createReader(new java.io.FileReader(System.getProperty("user.dir") + File.separator + "data.txt"));
+            JsonObject b = read.readObject();
+            for(String tag : b.keySet())
+            {
+                JsonObject o = (JsonObject)b.get(tag);
+                JPanel newPanel = new JPanel();
+                if(o.get("type").toString().replaceAll("\"", "").equals("SR"))
+                {
+                    ScaledRadial gauge;
+                    newPanel.setLocation(Integer.parseInt(o.get("location").toString().replaceAll("\"", "").split(",")[0]), Integer.parseInt(o.get("location").toString().replaceAll("\"", "").split(",")[1]));
+                    //   createCircularGauge(String title, String unit, String TAG, Dimension size, double scale, double min, double max, double threshold, boolean invertThreshold, double trackStart, double trackStop, JPanel parent  
+                    gauge = (ScaledRadial)createCircularGauge(
+                               o.get("title").toString().replaceAll("\"", ""), 
+                               o.get("unit").toString().replaceAll("\"", ""), 
+                               tag, 
+                               new Dimension(Integer.parseInt(o.get("size").toString().replaceAll("\"", "")), 
+                                      Integer.parseInt(o.get("size").toString().replaceAll("\"", ""))),
+                               Double.parseDouble(o.get("scale").toString().replaceAll("\"", "")), 
+                               Double.parseDouble(o.get("range").toString().replaceAll("\"", "").split(",")[0]),
+                               Double.parseDouble(o.get("range").toString().replaceAll("\"", "").split(",")[1]),
+                               Double.parseDouble(o.get("threshold").toString().replaceAll("\"", "")),
+                               Boolean.parseBoolean(o.get("inverted").toString().replaceAll("\"", "")),
+                               Double.parseDouble(o.get("track").toString().replaceAll("\"", "").split(",")[0]),
+                               Double.parseDouble(o.get("track").toString().replaceAll("\"", "").split(",")[1]),
+                               newPanel);
+                    gauge.setFrameDesign(FrameDesign.valueOf(o.get("frame").toString().replaceAll("\"", "")));
+                    gauge.setBackground(Color.decode(Integer.toString(o.getInt("background"))));
+                    gauge.setLedColor(LedColor.valueOf(o.get("led").toString().replaceAll("\"", "")));
+                    gauge.setPointerColor(ColorDef.valueOf(o.get("pointer").toString().replaceAll("\"", "")));
+                    gauge.setLcdColor(LcdColor.valueOf(o.get("lcd").toString().replaceAll("\"", "")));
+                    gauge.setTrackStart(Double.parseDouble(o.get("redline").toString().replaceAll("\"", "").split(",")[0]));
+                    gauge.setTrackStop(Double.parseDouble(o.get("redline").toString().replaceAll("\"", "").split(",")[1]));
+                    gauge.setTrackStartColor(Color.decode(o.get("redline_color").toString().replaceAll("\"", "").split(",")[0]));
+                    gauge.setTrackStopColor(Color.decode(o.get("redline_color").toString().replaceAll("\"", "").split(",")[1]));
+                    gauge.setTrackVisible(o.getBoolean("redline_visible"));
+                    gauge.setTag(tag);
+                    newPanel.add(gauge);
+                    addEventListeners(newPanel, gauge);
+                    newPanel.setVisible(true);
+                    this.add(newPanel);
+                }
+                this.repaint();
+                
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            }
     }                                                  
 
     private void generateEditPanel() {
-        createCircularGauge("Engine RPM", "RPMx1K", "RPM", new Dimension(100,100), 1000, 0, 14, 12, false, 10.5, 14, radial_editPanel).setValue(7);
-        createLinearGauge("BrakeFront", "PSIx1k", "PSI", new Dimension(200,100), 1, 0, 2, 1, false, 1, 2, linear_editPanel).setValue(.9);
-        createLinearGauge("BrakeRear", "PSIx1k", "PSI", new Dimension(99,100), 1, 0, 2, 1, false, 1, 2, linearVert_editPanel).setValue(.9);
+        createCircularGauge("Engine RPM", "RPMx1K", "", new Dimension(100,100), 1000, 0, 14, 12, false, 10.5, 14, radial_editPanel).setValue(7);
+        createLinearGauge("BrakeFront", "PSIx1k", "", new Dimension(200,100), 1, 0, 2, 1, false, 1, 2, linear_editPanel).setValue(.9);
+        createLinearGauge("BrakeRear", "PSIx1k", "", new Dimension(99,100), 1, 0, 2, 1, false, 1, 2, linearVert_editPanel).setValue(.9);
     }
     
     //create with default scale
@@ -533,7 +590,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
         //add the gauge to the panel
         parent.add(gauge);
         if(!(TAG.equals("")))
-            gauges.put(TAG, gauges);
+            gauges.put(TAG, gauge);
         
         return gauge;
     }
