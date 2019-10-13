@@ -8,6 +8,7 @@ package pitsoftware;
 import com.orsoncharts.util.json.JSONObject;
 import javax.json.stream.JsonParser;
 import eu.hansolo.steelseries.gauges.*;
+import eu.hansolo.steelseries.tools.BackgroundColor;
 import eu.hansolo.steelseries.tools.ColorDef;
 import eu.hansolo.steelseries.tools.FrameDesign;
 import eu.hansolo.steelseries.tools.LcdColor;
@@ -240,11 +241,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
             editPanel.setVisible(false);
             editPanelMenuItem.setText("Enable Editing");
         }
-        for(Component a : ((JPanel)((javax.swing.JRootPane)this.getComponents()[0]).getComponents()[0]).getComponents())
-        {
-            System.out.println(a.getLocation());
-            System.out.println(a.getClass());
-        }
     }                                                 
     private void addEventListeners(JPanel newPanel, AbstractGauge gauge)
     {
@@ -352,44 +348,47 @@ public class CustomizableWindow extends javax.swing.JFrame {
     private void saveWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {                                                   
         //JSON object that goes to file
         JSONObject toFile = new JSONObject();
-        
         //for each gauge
         for(String key : gauges.keySet()) {
             //get the gauge
-            System.out.println(gauges.get(key));
             AbstractGauge o = (AbstractGauge)gauges.get(key);
+            Map m;
             //if its a Radial
             if(o instanceof ScaledRadial) {
                 //create its JSONObject within the json and put in the json file
-                Map m = new LinkedHashMap(18);
-                m.put("title", o.getTitle());
+                m = new LinkedHashMap(18);
                 m.put("type", "SR");
-                m.put("unit", o.getUnitString());
-                m.put("location", o.getParent().getX() + "," + o.getParent().getY());
-                m.put("size", o.getParent().getSize().height);
                 m.put("scale", ((ScaledRadial) o).getScale());
-                m.put("range", o.getMinValue() + "," + o.getMaxValue());
-                m.put("threshold", o.getThreshold());
-                m.put("inverted", o.isThresholdBehaviourInverted());
-                m.put("track", o.getTrackStart() + "," + o.getTrackStop());
                 m.put("frame", o.getFrameDesign().toString());
-                m.put("background", o.getBackground().getRGB());
+                m.put("background", o.getBackgroundColor().toString());
                 m.put("led", o.getLedColor().toString());
                 m.put("pointer", ((ScaledRadial) o).getPointerColor().toString());
                 m.put("lcd", ((ScaledRadial) o).getLcdColor().toString());
-                m.put("redline", o.getTrackStart() + "," + o.getTrackStop());
-                m.put("redline_color", o.getTrackStartColor().getRGB() + "," + o.getTrackStopColor().getRGB());
-                m.put("redline_visible", o.isTrackVisible());
-                toFile.put(key, m);
             }
-            else if(o instanceof ScaledLinear) {
+            else {
+                m = new LinkedHashMap(13);
+                m.put("type", "SL");
+                m.put("scale", ((ScaledLinear) o).getScale());
             }
+            
+            m.put("title", o.getTitle());
+            m.put("size", o.getParent().getSize().width + "," + o.getParent().getSize().height);
+            m.put("threshold", o.getThreshold());
+            m.put("inverted", o.isThresholdBehaviourInverted());
+            m.put("range", o.getMinValue() + "," + o.getMaxValue());
+            m.put("track", o.getTrackStart() + "," + o.getTrackStop());
+            m.put("redline", o.getTrackStart() + "," + o.getTrackStop());
+            m.put("redline_color", o.getTrackStartColor().getRGB() + "," + o.getTrackStopColor().getRGB());
+            m.put("redline_visible", o.isTrackVisible());
+            m.put("unit", o.getUnitString());
+            m.put("location", o.getParent().getX() + "," + o.getParent().getY());
+            toFile.put(key, m);
         }
         try {
             String json = toFile.toJSONString();
             BufferedWriter writer = new BufferedWriter(new FileWriter("data.txt"));
             writer.write(json);
-            writer.close();
+            writer.close(); 
         } catch(IOException e){
             e.printStackTrace();
         }
@@ -404,19 +403,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
         //ask for properties: Title, Unit, generate TAG, size, scale, min, max, threshold, invertthreshhold, trackstart, trackstop
         JPanel newPanel = new JPanel();
         newPanel.setSize(100,100);
-        newPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(java.awt.event.MouseEvent evt) {
-                if(editing) {
-                    JPanel panel = (JPanel) evt.getSource();
-                    Point newLocation = evt.getLocationOnScreen();
-                    newLocation.x = newLocation.x + panel.getParent().getLocation().x - 50;
-                    newLocation.y = newLocation.y + panel.getParent().getLocation().y - 100;
-                    panel.setLocation(newLocation);
-                    panel.repaint();
-                }
-            }
-        });
         this.add(newPanel);
         newPanel.setVisible(true);
         newPanel.setLocation(10, 10);
@@ -424,21 +410,8 @@ public class CustomizableWindow extends javax.swing.JFrame {
         String[] tag = new String[] {""};
         GaugeProperties gp = new GaugeProperties(this, true, gauge, tag);
         gp.setVisible(true);
-        newPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if(editing)
-                {
-                    if(evt.getButton() == java.awt.event.MouseEvent.BUTTON3)
-                    {  
-                        JPanel panel = (JPanel)evt.getSource();
-                        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
-                        frame.updateGauge(evt, gauge, panel, tag); 
-                    }
-                }
-            }
-        });
         
+        addEventListeners(newPanel, gauge);
         //TODO: NEW custom dialog
         // CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
         //cgd.setVisible(true);
@@ -465,17 +438,17 @@ public class CustomizableWindow extends javax.swing.JFrame {
             {
                 JsonObject o = (JsonObject)b.get(tag);
                 JPanel newPanel = new JPanel();
+                AbstractGauge gauge;
                 if(o.get("type").toString().replaceAll("\"", "").equals("SR"))
                 {
-                    ScaledRadial gauge;
-                    newPanel.setLocation(Integer.parseInt(o.get("location").toString().replaceAll("\"", "").split(",")[0]), Integer.parseInt(o.get("location").toString().replaceAll("\"", "").split(",")[1]));
+                    
                     //   createCircularGauge(String title, String unit, String TAG, Dimension size, double scale, double min, double max, double threshold, boolean invertThreshold, double trackStart, double trackStop, JPanel parent  
                     gauge = (ScaledRadial)createCircularGauge(
                                o.get("title").toString().replaceAll("\"", ""), 
                                o.get("unit").toString().replaceAll("\"", ""), 
                                tag, 
-                               new Dimension(Integer.parseInt(o.get("size").toString().replaceAll("\"", "")), 
-                                      Integer.parseInt(o.get("size").toString().replaceAll("\"", ""))),
+                               new Dimension(Integer.parseInt(o.get("size").toString().replaceAll("\"", "").split(",")[0]), 
+                                      Integer.parseInt(o.get("size").toString().replaceAll("\"", "").split(",")[1])),
                                Double.parseDouble(o.get("scale").toString().replaceAll("\"", "")), 
                                Double.parseDouble(o.get("range").toString().replaceAll("\"", "").split(",")[0]),
                                Double.parseDouble(o.get("range").toString().replaceAll("\"", "").split(",")[1]),
@@ -485,21 +458,40 @@ public class CustomizableWindow extends javax.swing.JFrame {
                                Double.parseDouble(o.get("track").toString().replaceAll("\"", "").split(",")[1]),
                                newPanel);
                     gauge.setFrameDesign(FrameDesign.valueOf(o.get("frame").toString().replaceAll("\"", "")));
-                    gauge.setBackground(Color.decode(Integer.toString(o.getInt("background"))));
+                    gauge.setBackgroundColor(BackgroundColor.valueOf(o.get("background").toString().replaceAll("\"", "")));
                     gauge.setLedColor(LedColor.valueOf(o.get("led").toString().replaceAll("\"", "")));
-                    gauge.setPointerColor(ColorDef.valueOf(o.get("pointer").toString().replaceAll("\"", "")));
-                    gauge.setLcdColor(LcdColor.valueOf(o.get("lcd").toString().replaceAll("\"", "")));
-                    gauge.setTrackStart(Double.parseDouble(o.get("redline").toString().replaceAll("\"", "").split(",")[0]));
-                    gauge.setTrackStop(Double.parseDouble(o.get("redline").toString().replaceAll("\"", "").split(",")[1]));
-                    gauge.setTrackStartColor(Color.decode(o.get("redline_color").toString().replaceAll("\"", "").split(",")[0]));
-                    gauge.setTrackStopColor(Color.decode(o.get("redline_color").toString().replaceAll("\"", "").split(",")[1]));
-                    gauge.setTrackVisible(o.getBoolean("redline_visible"));
-                    gauge.setTag(tag);
-                    newPanel.add(gauge);
-                    addEventListeners(newPanel, gauge);
-                    newPanel.setVisible(true);
-                    this.add(newPanel);
+                    ((ScaledRadial)gauge).setPointerColor(ColorDef.valueOf(o.get("pointer").toString().replaceAll("\"", "")));
+                    ((ScaledRadial)gauge).setLcdColor(LcdColor.valueOf(o.get("lcd").toString().replaceAll("\"", "")));
+                    ((ScaledRadial)gauge).setTag(tag);
                 }
+                else
+                {
+                     gauge = (ScaledLinear)createLinearGauge(
+                               o.get("title").toString().replaceAll("\"", ""), 
+                               o.get("unit").toString().replaceAll("\"", ""), 
+                               tag, 
+                               new Dimension(Integer.parseInt(o.get("size").toString().replaceAll("\"", "").split(",")[0]), 
+                                      Integer.parseInt(o.get("size").toString().replaceAll("\"", "").split(",")[1])),
+                               Double.parseDouble(o.get("scale").toString().replaceAll("\"", "")), 
+                               Double.parseDouble(o.get("range").toString().replaceAll("\"", "").split(",")[0]),
+                               Double.parseDouble(o.get("range").toString().replaceAll("\"", "").split(",")[1]),
+                               Double.parseDouble(o.get("threshold").toString().replaceAll("\"", "")),
+                               Boolean.parseBoolean(o.get("inverted").toString().replaceAll("\"", "")),
+                               Double.parseDouble(o.get("track").toString().replaceAll("\"", "").split(",")[0]),
+                               Double.parseDouble(o.get("track").toString().replaceAll("\"", "").split(",")[1]),
+                               newPanel);
+                     ((ScaledLinear)gauge).setTag(tag);
+                }
+                newPanel.setLocation(Integer.parseInt(o.get("location").toString().replaceAll("\"", "").split(",")[0]),
+                        Integer.parseInt(o.get("location").toString().replaceAll("\"", "").split(",")[1]));
+                gauge.setTrackStart(Double.parseDouble(o.get("redline").toString().replaceAll("\"", "").split(",")[0]));
+                gauge.setTrackStop(Double.parseDouble(o.get("redline").toString().replaceAll("\"", "").split(",")[1]));
+                gauge.setTrackStartColor(Color.decode(o.get("redline_color").toString().replaceAll("\"", "").split(",")[0]));
+                gauge.setTrackStopColor(Color.decode(o.get("redline_color").toString().replaceAll("\"", "").split(",")[1]));
+                gauge.setTrackVisible(o.getBoolean("redline_visible"));
+                addEventListeners(newPanel, gauge);
+                newPanel.setVisible(true);
+                this.add(newPanel);
                 this.repaint();
                 
             }
@@ -587,6 +579,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
         }
         //set the panel the gauge will go in size
         parent.setPreferredSize(size);
+        parent.setSize(size);
         //add the gauge to the panel
         parent.add(gauge);
         if(!(TAG.equals("")))
