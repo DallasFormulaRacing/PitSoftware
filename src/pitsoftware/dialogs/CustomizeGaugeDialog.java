@@ -5,6 +5,7 @@
  */
 package pitsoftware.dialogs;
 
+import eu.hansolo.steelseries.gauges.AbstractGauge;
 import eu.hansolo.steelseries.tools.BackgroundColor;
 import eu.hansolo.steelseries.tools.ColorDef;
 import eu.hansolo.steelseries.tools.FrameDesign;
@@ -17,6 +18,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jfree.chart.needle.PointerNeedle;
 import org.jfree.chart.plot.dial.DialPointer;
+import pitsoftware.ScaledLinear;
 import pitsoftware.ScaledRadial;
 
 /**
@@ -25,7 +27,8 @@ import pitsoftware.ScaledRadial;
  */
 public class CustomizeGaugeDialog extends javax.swing.JDialog {
 
-    ScaledRadial gauge;
+    AbstractGauge gauge;
+    Dimension oldSize;
     /**
      * Creates new form CustomizeGaugeDialog
      */
@@ -41,6 +44,24 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.gauge = gauge;
+        setupLists();
+        displayGauge();
+        
+        //Show the Gauge's current customizations as selected
+        frameDesignsList.setSelectedIndex(gauge.getFrameDesign().ordinal());
+        backgroundsList.setSelectedIndex(gauge.getBackgroundColor().ordinal());
+        ledsList.setSelectedIndex(gauge.getLedColor().ordinal());
+        pointerList.setSelectedIndex(gauge.getPointerColor().ordinal());
+        lcdList.setSelectedIndex(gauge.getLcdColor().ordinal());
+        
+    }
+    
+    public CustomizeGaugeDialog(java.awt.Frame parent, boolean modal, ScaledLinear gauge) {
+        super(parent, modal);
+        initComponents();
+        this.gauge = gauge;
+        oldSize = gauge.getSize();
+        gauge.setSize(new Dimension(200, 200));
         setupLists();
         displayGauge();
         
