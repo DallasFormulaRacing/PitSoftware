@@ -544,15 +544,10 @@ public class GaugeProperties extends javax.swing.JDialog {
         } else if (gauge instanceof ScaledLinear) {
             ((ScaledLinear) gauge).setScale(scale);
             ((ScaledLinear) gauge).setTag(TAG[0]);
-            if(gauge.getWidth() > gauge.getHeight()) {
-                gauge.setSize(size.width, 100);
-                gauge.getParent().setPreferredSize(gauge.getSize());
-                gauge.getParent().setSize(gauge.getSize());
-            } else {
-                gauge.setSize(100, size.height);
-                gauge.getParent().setPreferredSize(gauge.getSize());
-                gauge.getParent().setSize(gauge.getSize());
-            }
+            gauge.setSize(size.width, size.height);
+            gauge.getParent().setPreferredSize(gauge.getSize());
+            gauge.getParent().setSize(gauge.getSize());
+            
         }
         gauge.setMinValue(min);
         if(max != 100)

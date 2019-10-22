@@ -26,7 +26,7 @@ import pitsoftware.dialogs.GaugeProperties;
 public class CustomizableWindow extends javax.swing.JFrame {
 
     //holds all the gauges
-    TreeMap<String, Object> gauges;
+    TreeMap<String, AbstractGauge> gauges;
     //holds if the form is being edited
     boolean editing;
     //holds if a radial is being added
@@ -66,15 +66,21 @@ public class CustomizableWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jMenuItem1 = new javax.swing.JMenuItem();
         editPanel = new javax.swing.JPanel();
         radial_editPanel = new javax.swing.JPanel();
         linear_editPanel = new javax.swing.JPanel();
+        linearVert_editPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openWindowMenuItem = new javax.swing.JMenuItem();
         saveWindowMenuItem = new javax.swing.JMenuItem();
+        startLoggingMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         editPanelMenuItem = new javax.swing.JMenuItem();
+        portsMenu = new javax.swing.JMenu();
+
+        jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setSize(new java.awt.Dimension(1375, 800));
@@ -118,6 +124,25 @@ public class CustomizableWindow extends javax.swing.JFrame {
             .addGap(0, 100, Short.MAX_VALUE)
         );
 
+        linearVert_editPanel.setBackground(new java.awt.Color(255, 255, 255));
+        linearVert_editPanel.setPreferredSize(new java.awt.Dimension(99, 100));
+        linearVert_editPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                linearVert_editPanelMouseClicked(evt);
+            }
+        });
+
+        javax.swing.GroupLayout linearVert_editPanelLayout = new javax.swing.GroupLayout(linearVert_editPanel);
+        linearVert_editPanel.setLayout(linearVert_editPanelLayout);
+        linearVert_editPanelLayout.setHorizontalGroup(
+            linearVert_editPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 99, Short.MAX_VALUE)
+        );
+        linearVert_editPanelLayout.setVerticalGroup(
+            linearVert_editPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout editPanelLayout = new javax.swing.GroupLayout(editPanel);
         editPanel.setLayout(editPanelLayout);
         editPanelLayout.setHorizontalGroup(
@@ -128,6 +153,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 .addGap(19, 19, 19)
                 .addComponent(linear_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
+                .addComponent(linearVert_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 1135, Short.MAX_VALUE))
         );
         editPanelLayout.setVerticalGroup(
@@ -135,7 +161,8 @@ public class CustomizableWindow extends javax.swing.JFrame {
             .addGroup(editPanelLayout.createSequentialGroup()
                 .addGroup(editPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(radial_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(linear_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(linear_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(linearVert_editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -157,6 +184,15 @@ public class CustomizableWindow extends javax.swing.JFrame {
         });
         fileMenu.add(saveWindowMenuItem);
 
+        startLoggingMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.CTRL_MASK));
+        startLoggingMenuItem.setText("Start This Bitch!");
+        startLoggingMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startLoggingMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(startLoggingMenuItem);
+
         jMenuBar1.add(fileMenu);
 
         editMenu.setText("Edit");
@@ -171,6 +207,9 @@ public class CustomizableWindow extends javax.swing.JFrame {
         editMenu.add(editPanelMenuItem);
 
         jMenuBar1.add(editMenu);
+
+        portsMenu.setText("Ports");
+        jMenuBar1.add(portsMenu);
 
         setJMenuBar(jMenuBar1);
 
@@ -400,6 +439,12 @@ public class CustomizableWindow extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_openWindowMenuItemActionPerformed
 
+    private void startLoggingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLoggingMenuItemActionPerformed
+        // TODO add your handling code here:
+        
+        logger = new Logger(gauges);
+    }//GEN-LAST:event_startLoggingMenuItemActionPerformed
+
     private void generateEditPanel() {
         createCircularGauge("Engine RPM", "RPMx1K", "", new Dimension(100,100), 1000, 0, 14, 12, false, 10.5, 14, radial_editPanel).setValue(7);
         createLinearGauge("BrakeFront", "PSIx1k", "", new Dimension(200,100), 1, 0, 2, 1, false, 1, 2, linear_editPanel).setValue(.9);
@@ -563,9 +608,13 @@ public class CustomizableWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem editPanelMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JPanel linearVert_editPanel;
     private javax.swing.JPanel linear_editPanel;
     private javax.swing.JMenuItem openWindowMenuItem;
+    private javax.swing.JMenu portsMenu;
     private javax.swing.JPanel radial_editPanel;
     private javax.swing.JMenuItem saveWindowMenuItem;
+    private javax.swing.JMenuItem startLoggingMenuItem;
     // End of variables declaration//GEN-END:variables
 }

@@ -948,7 +948,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         return gauge;
     }
     
-        /**
+    /**
      * All parsing from below is done using the PE3 protocol available on BOX
      * There are supplemental documents that explain why the string are being split the way they are
      * In basic different parts of the hexstring contain different data elements we are not to look at the element as a whole
