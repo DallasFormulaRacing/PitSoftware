@@ -33,6 +33,10 @@ import java.util.logging.Level;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.swing.JFileChooser;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import pitsoftware.dialogs.CustomizeGaugeDialog;
 import pitsoftware.dialogs.GaugeProperties;
 
@@ -384,14 +388,37 @@ public class CustomizableWindow extends javax.swing.JFrame {
             m.put("location", o.getParent().getX() + "," + o.getParent().getY());
             toFile.put(key, m);
         }
+        
         try {
-            String json = toFile.toJSONString();
-            BufferedWriter writer = new BufferedWriter(new FileWriter("data.txt"));
-            writer.write(json);
-            writer.close(); 
-        } catch(IOException e){
-            e.printStackTrace();
-        }
+            LookAndFeel originalLAF = UIManager.getLookAndFeel();
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(new File(""));
+            int result = chooser.showSaveDialog(null);
+            //Program crashes if the LookAndFeel isn't set back to the original
+            UIManager.setLookAndFeel(originalLAF);
+            if(result == JFileChooser.APPROVE_OPTION) {
+                //if the file chosen is missing the .dfr file extension, add then save
+                String fileName = chooser.getSelectedFile().toString();
+                if(!fileName.contains(".txt"))
+                   fileName+=".txt";
+                else 
+                    fileName+=".txt";
+                String json = toFile.toJSONString();
+                BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+                writer.write(json);
+                writer.close();
+               
+           } else {
+               //error message displayed
+               new MessageBox("Error: File could not be approved").setVisible(true);
+           }
+
+       } catch(Exception e)
+       {
+           e.printStackTrace();
+       }
+        
     }                                                  
     
     private void linearVert_editPanelMouseClicked(java.awt.event.MouseEvent evt) {                                                  
@@ -432,7 +459,54 @@ public class CustomizableWindow extends javax.swing.JFrame {
     private void openWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {                                                   
         // TODO add your handling code here:
        try {
-            JsonReader read = Json.createReader(new java.io.FileReader(System.getProperty("user.dir") + File.separator + "data.txt"));
+            LookAndFeel originalLAF=UIManager.getLookAndFeel();
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            
+           // Open a separate dialog to select a .csv file
+            JFileChooser chooser = new JFileChooser() {
+
+                // Override approveSelection method because we only want to approve
+                //  the selection if its is a .csv file.
+                @Override
+                public void approveSelection() {
+                    //get all selected files
+                    File chosenFile = getSelectedFile();
+
+                    //check to see if all files are legal
+
+                    if(chosenFile.exists()) {
+                        // Get the file extension to make sure it is .txt
+                        String filePath = chosenFile.getAbsolutePath();
+                        int lastIndex = filePath.lastIndexOf(".");
+                        String fileExtension = filePath.substring(lastIndex,
+                                filePath.length());
+
+                        // approve selection if it is a .txt file
+                        if (!fileExtension.equals(".txt")) {
+                            // display error message - that selection should not be approve
+                            this.cancelSelection();
+                        }
+                        else
+                            super.approveSelection();
+                    } 
+                   
+                }
+            };
+            
+            String filePath=null;
+            int choice = chooser.showOpenDialog(null);
+            //Program crashes if the LookAndFeel isn't set back to the original
+            UIManager.setLookAndFeel(originalLAF);
+            if (choice == JFileChooser.APPROVE_OPTION) {
+                filePath = chooser.getSelectedFile().getAbsolutePath();        
+            }else {
+               //error message displayed
+               new MessageBox("Error: File could not be approved").setVisible(true);
+               return;
+           }
+            
+           // new java.io.FileReader(System.getProperty("user.dir") + File.separator + "data.txt")
+            JsonReader read = Json.createReader(new java.io.FileReader(filePath));
             JsonObject b = read.readObject();
             for(String tag : b.keySet())
             {
@@ -495,7 +569,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 this.repaint();
                 
             }
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             }
     }                                                  
