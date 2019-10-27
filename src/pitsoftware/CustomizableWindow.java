@@ -5,10 +5,13 @@
  */
 package pitsoftware;
 
+import com.orsoncharts.util.json.JSONObject;
 import eu.hansolo.steelseries.gauges.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -23,7 +26,7 @@ import pitsoftware.dialogs.GaugeProperties;
 public class CustomizableWindow extends javax.swing.JFrame {
 
     //holds all the gauges
-    TreeMap<String, Object> gauges;
+    TreeMap<String, AbstractGauge> gauges;
     //holds if the form is being edited
     boolean editing;
     //holds if a radial is being added
@@ -63,6 +66,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jMenuItem1 = new javax.swing.JMenuItem();
         editPanel = new javax.swing.JPanel();
         radial_editPanel = new javax.swing.JPanel();
         linear_editPanel = new javax.swing.JPanel();
@@ -71,8 +75,12 @@ public class CustomizableWindow extends javax.swing.JFrame {
         fileMenu = new javax.swing.JMenu();
         openWindowMenuItem = new javax.swing.JMenuItem();
         saveWindowMenuItem = new javax.swing.JMenuItem();
+        startLoggingMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         editPanelMenuItem = new javax.swing.JMenuItem();
+        portsMenu = new javax.swing.JMenu();
+
+        jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setSize(new java.awt.Dimension(1375, 800));
@@ -161,6 +169,11 @@ public class CustomizableWindow extends javax.swing.JFrame {
         fileMenu.setText("File");
 
         openWindowMenuItem.setText("Open Window");
+        openWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openWindowMenuItemActionPerformed(evt);
+            }
+        });
         fileMenu.add(openWindowMenuItem);
 
         saveWindowMenuItem.setText("Save Window");
@@ -170,6 +183,15 @@ public class CustomizableWindow extends javax.swing.JFrame {
             }
         });
         fileMenu.add(saveWindowMenuItem);
+
+        startLoggingMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.CTRL_MASK));
+        startLoggingMenuItem.setText("Start This Bitch!");
+        startLoggingMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startLoggingMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(startLoggingMenuItem);
 
         jMenuBar1.add(fileMenu);
 
@@ -185,6 +207,9 @@ public class CustomizableWindow extends javax.swing.JFrame {
         editMenu.add(editPanelMenuItem);
 
         jMenuBar1.add(editMenu);
+
+        portsMenu.setText("Ports");
+        jMenuBar1.add(portsMenu);
 
         setJMenuBar(jMenuBar1);
 
@@ -317,45 +342,34 @@ public class CustomizableWindow extends javax.swing.JFrame {
     }
     
     private void saveWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveWindowMenuItemActionPerformed
+        //JSON object that goes to file
+        JSONObject toFile = new JSONObject();
+        
+        //for each gauge
         for(String key : logger.gauges.keySet()) {
+            //get the gauge
             AbstractGauge o = logger.gauges.get(key);
+            //if its a Radial
             if(o instanceof ScaledRadial) {
-                StringBuilder sb = new StringBuilder();
-                //SR\Title\\units\x,y\scale\min,max\warning\inverted?\redlinemin,redlinemax\key\framedesign\backgroundRGB\LEDColor\PointerColor\LCDColor
-                sb.append("SR\\");
-                sb.append(o.getTitle()).append("\\");
-                sb.append(o.getUnitString()).append("\\");
-                sb.append(o.getParent().getX()).append(",").append(o.getParent().getY()).append("\\");
-                sb.append(((ScaledRadial) o).getScale()).append("\\");
-                sb.append(o.getMinValue()).append(",").append(o.getMaxValue()).append("\\");
-                sb.append(o.getThreshold()).append("\\");
-                sb.append(o.isThresholdBehaviourInverted()).append("\\");
-                sb.append(o.getTrackStart()).append(",").append(o.getTrackStop());
-                sb.append(key).append("\\");
-                sb.append(o.getFrameDesign().toString()).append("\\");
-                sb.append(o.getBackground().getRGB()).append("\\");
-                sb.append(o.getLedColor().toString()).append("\\");
-                sb.append(((ScaledRadial) o).getPointerColor().toString()).append("\\");
-                sb.append(((ScaledRadial) o).getLcdColor().toString()).append("\n");
+                //create its JSONObject within the json and put in the json file
+                Map m = new LinkedHashMap(14);
+                m.put("title", o.getTitle());
+                m.put("type", "SR");
+                m.put("unit", o.getUnitString());
+                m.put("location", o.getParent().getX() + "," + o.getParent().getY());
+                m.put("scale", ((ScaledRadial) o).getScale());
+                m.put("range", o.getMinValue() + "," + o.getMaxValue());
+                m.put("threshold", o.getThreshold());
+                m.put("inverted", o.isThresholdBehaviourInverted());
+                m.put("track", o.getTrackStart() + "," + o.getTrackStop());
+                m.put("frame", o.getFrameDesign().toString());
+                m.put("background", o.getBackground().getRGB());
+                m.put("led", o.getLedColor().toString());
+                m.put("pointer", ((ScaledRadial) o).getPointerColor().toString());
+                m.put("lcd", ((ScaledRadial) o).getLcdColor().toString());
+                toFile.put(key, m);
             }
             else if(o instanceof ScaledLinear) {
-                StringBuilder sb = new StringBuilder();
-                //SL\Title\\units\x,y\scale\min,max\warning\inverted?\redlinemin,redlinemax\key\framedesign\backgroundRGB\LEDColor\PointerColor\LCDColor
-                sb.append("SR\\");
-                sb.append(o.getTitle()).append("\\");
-                sb.append(o.getUnitString()).append("\\");
-                sb.append(o.getParent().getX()).append(",").append(o.getParent().getY()).append("\\");
-                sb.append(((ScaledRadial) o).getScale()).append("\\");
-                sb.append(o.getMinValue()).append(",").append(o.getMaxValue()).append("\\");
-                sb.append(o.getThreshold()).append("\\");
-                sb.append(o.isThresholdBehaviourInverted()).append("\\");
-                sb.append(o.getTrackStart()).append(",").append(o.getTrackStop());
-                sb.append(key).append("\\");
-                sb.append(o.getFrameDesign().toString()).append("\\");
-                sb.append(o.getBackground().getRGB()).append("\\");
-                sb.append(o.getLedColor().toString()).append("\\");
-                sb.append(((ScaledRadial) o).getPointerColor().toString()).append("\\");
-                sb.append(((ScaledRadial) o).getLcdColor().toString()).append("\n");
             }
         }
     }//GEN-LAST:event_saveWindowMenuItemActionPerformed
@@ -421,10 +435,19 @@ public class CustomizableWindow extends javax.swing.JFrame {
         repaint();
     }//GEN-LAST:event_linear_editPanelMouseClicked
 
+    private void openWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openWindowMenuItemActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_openWindowMenuItemActionPerformed
+
+    private void startLoggingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLoggingMenuItemActionPerformed
+        // TODO add your handling code here:
+        
+        logger = new Logger(gauges);
+    }//GEN-LAST:event_startLoggingMenuItemActionPerformed
+
     private void generateEditPanel() {
-        createCircularGauge("Engine RPM", "RPMx1K", "RPM", new Dimension(100,100), 1000, 0, 14, 12, false, 10.5, 14, radial_editPanel).setValue(7);
-        createLinearGauge("BrakeFront", "PSIx1k", "PSI", new Dimension(200,100), 1, 0, 2, 1, false, 1, 2, linear_editPanel).setValue(.9);
-        createLinearGauge("BrakeRear", "PSIx1k", "PSI", new Dimension(99,100), 1, 0, 2, 1, false, 1, 2, linearVert_editPanel).setValue(.9);
+        createCircularGauge("Engine RPM", "RPMx1K", "", new Dimension(100,100), 1000, 0, 14, 12, false, 10.5, 14, radial_editPanel).setValue(7);
+        createLinearGauge("BrakeFront", "PSIx1k", "", new Dimension(200,100), 1, 0, 2, 1, false, 1, 2, linear_editPanel).setValue(.9);
     }
     
     //create with default scale
@@ -585,10 +608,13 @@ public class CustomizableWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem editPanelMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel linearVert_editPanel;
     private javax.swing.JPanel linear_editPanel;
     private javax.swing.JMenuItem openWindowMenuItem;
+    private javax.swing.JMenu portsMenu;
     private javax.swing.JPanel radial_editPanel;
     private javax.swing.JMenuItem saveWindowMenuItem;
+    private javax.swing.JMenuItem startLoggingMenuItem;
     // End of variables declaration//GEN-END:variables
 }

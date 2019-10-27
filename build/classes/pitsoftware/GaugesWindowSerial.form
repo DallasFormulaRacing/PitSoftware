@@ -11,12 +11,12 @@
             <Property name="text" type="java.lang.String" value="File"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="findPythonFileMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="findSerialPortsMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Find Python File"/>
+                <Property name="text" type="java.lang.String" value="Find Serial Ports"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="findPythonFileMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="findSerialPortsMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="exportDataMenuItem">
@@ -29,14 +29,16 @@
             </MenuItem>
           </SubComponents>
         </Menu>
+        <Menu class="javax.swing.JMenu" name="serialMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Ports"/>
+          </Properties>
+        </Menu>
       </SubComponents>
     </Menu>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
-    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1375, 800]"/>
-    </Property>
     <Property name="resizable" type="boolean" value="false"/>
     <Property name="size" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[1375, 800]"/>
@@ -180,6 +182,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="fuelOpenTimePanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -200,6 +205,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="coolantPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -220,6 +228,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="mapPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -240,6 +251,9 @@
           <Dimension value="[200, 200]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="AFRPanelMouseClicked"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -260,6 +274,9 @@
           <Dimension value="[200, 200]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lamda1RawPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -280,6 +297,9 @@
           <Dimension value="[200, 200]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lamda2RawPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -300,6 +320,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="ignAnglePanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -320,6 +343,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="rpmPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -340,6 +366,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="tpsPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -360,6 +389,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="bprPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -380,6 +412,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="bpfPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -403,6 +438,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="airPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -426,6 +464,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="barPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -449,6 +490,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="voltagePanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -483,6 +527,9 @@
           <Dimension value="[250, 188]"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="speedPanelMouseReleased"/>
+      </Events>
 
       <Layout>
         <DimensionLayout dim="0">
