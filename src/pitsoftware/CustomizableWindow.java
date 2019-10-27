@@ -400,10 +400,8 @@ public class CustomizableWindow extends javax.swing.JFrame {
             if(result == JFileChooser.APPROVE_OPTION) {
                 //if the file chosen is missing the .dfr file extension, add then save
                 String fileName = chooser.getSelectedFile().toString();
-                if(!fileName.contains(".txt"))
-                   fileName+=".txt";
-                else 
-                    fileName+=".txt";
+                if(!fileName.contains(".pitconfig"))
+                   fileName+=".pitconfig";
                 String json = toFile.toJSONString();
                 BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
                 writer.write(json);
@@ -475,14 +473,14 @@ public class CustomizableWindow extends javax.swing.JFrame {
                     //check to see if all files are legal
 
                     if(chosenFile.exists()) {
-                        // Get the file extension to make sure it is .txt
+                        // Get the file extension to make sure it is .pitconfig
                         String filePath = chosenFile.getAbsolutePath();
                         int lastIndex = filePath.lastIndexOf(".");
                         String fileExtension = filePath.substring(lastIndex,
                                 filePath.length());
 
-                        // approve selection if it is a .txt file
-                        if (!fileExtension.equals(".txt")) {
+                        // approve selection if it is a .pitconfig file
+                        if (!fileExtension.equals(".pitconfig")) {
                             // display error message - that selection should not be approve
                             this.cancelSelection();
                         }
@@ -504,8 +502,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
                new MessageBox("Error: File could not be approved").setVisible(true);
                return;
            }
-            
-           // new java.io.FileReader(System.getProperty("user.dir") + File.separator + "data.txt")
+          
             JsonReader read = Json.createReader(new java.io.FileReader(filePath));
             JsonObject b = read.readObject();
             for(String tag : b.keySet())
