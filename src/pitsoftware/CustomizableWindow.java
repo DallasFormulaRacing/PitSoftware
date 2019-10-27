@@ -419,8 +419,8 @@ public class CustomizableWindow extends javax.swing.JFrame {
         });
         
         //TODO: NEW custom dialog
-        // CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
-        //cgd.setVisible(true);
+        CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
+        cgd.setVisible(true);
         if(cancel == false)
         {
             newPanel.add(gauge);
