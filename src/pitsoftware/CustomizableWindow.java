@@ -126,11 +126,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
 
         linearVert_editPanel.setBackground(new java.awt.Color(255, 255, 255));
         linearVert_editPanel.setPreferredSize(new java.awt.Dimension(99, 100));
-        linearVert_editPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                linearVert_editPanelMouseClicked(evt);
-            }
-        });
 
         javax.swing.GroupLayout linearVert_editPanelLayout = new javax.swing.GroupLayout(linearVert_editPanel);
         linearVert_editPanel.setLayout(linearVert_editPanelLayout);
@@ -348,7 +343,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
         //for each gauge
         for(String key : logger.gauges.keySet()) {
             //get the gauge
-            AbstractGauge o = logger.gauges.get(key);
+            AbstractGauge o = (AbstractGauge) logger.gauges.get(key);
             //if its a Radial
             if(o instanceof ScaledRadial) {
                 //create its JSONObject within the json and put in the json file
@@ -373,10 +368,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_saveWindowMenuItemActionPerformed
-
-    private void linearVert_editPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linearVert_editPanelMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_linearVert_editPanelMouseClicked
 
     private void linear_editPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linear_editPanelMouseClicked
         //Create new panel that can be moved
