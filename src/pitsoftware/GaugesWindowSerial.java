@@ -101,13 +101,13 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(GaugesWindowSerial.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 } else {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(GaugesWindowSerial.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
@@ -690,18 +690,18 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                     currTime = 0;
                     currAccelTime = 0;
                 } catch (TooManyListenersException ex) {
-                    new MessageBox("too many listeners.").setVisible(true);
+                    Toast.makeToast(this, "Too many listeners!", Toast.DURATION_MEDIUM);
                 } catch (IOException ex) {
-                    new MessageBox("io exception").setVisible(true);
+                    Toast.makeToast(this, "IOException!", Toast.DURATION_MEDIUM);
                 } catch (SerialPortException ex) {
-                    new MessageBox("serial port probably not found. most likely\n idk man. you prob gave some bs port.\n try again.").setVisible(true);
+                    new MessageBox(this, "serial port probably not found. most likely\n idk man. you prob gave some bs port.\n try again.", true).setVisible(true);
                 }
             } else {
                 //if path was not defined
                 //set isRunning to false
                 isRunning = false;
                 //let the user know they need to select a serial path
-                new MessageBox("DEFINE SERIAL PATH!! DUMBASS.").setVisible(true);
+                new MessageBox(this, "DEFINE SERIAL PATH!! DUMBASS.", true).setVisible(true);
             }
         }
         else {
@@ -710,7 +710,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                 serial = null;
                 data.clear();
             } catch (SerialPortException ex) {
-                new MessageBox("uhh. This is incredibly unlikely.").setVisible(true);
+                new MessageBox(this, "uhh. This is incredibly unlikely.", true).setVisible(true);
             }
             startButton.setText("START THIS BITCH!");
             try {
@@ -718,7 +718,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                 hashTableToCSV();
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
-                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(GaugesWindowSerial.class.getName()).log(Level.SEVERE, null, ex);
             }
             if(parseThread.isAlive())
                 parseThread.interrupt();

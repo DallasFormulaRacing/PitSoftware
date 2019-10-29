@@ -6,7 +6,6 @@
 package pitsoftware;
 
 import com.orsoncharts.util.json.JSONObject;
-import javax.json.stream.JsonParser;
 import eu.hansolo.steelseries.gauges.*;
 import eu.hansolo.steelseries.tools.BackgroundColor;
 import eu.hansolo.steelseries.tools.ColorDef;
@@ -24,19 +23,13 @@ import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.logging.Level;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.swing.JFileChooser;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import pitsoftware.dialogs.CustomizeGaugeDialog;
 import pitsoftware.dialogs.GaugeProperties;
 
@@ -421,7 +414,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
                
            } else {
                //error message displayed
-               new MessageBox("Error: File could not be approved").setVisible(true);
+               new MessageBox(this, "Error: File could not be approved", true).setVisible(true);
            }
 
        } catch(Exception e)
@@ -511,7 +504,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 filePath = chooser.getSelectedFile().getAbsolutePath();        
             }else {
                //error message displayed
-               new MessageBox("Error: File could not be approved").setVisible(true);
+               new MessageBox(this, "Error: File could not be approved", true).setVisible(true);
                return;
            }
           
@@ -764,6 +757,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
     private javax.swing.JPanel radial_editPanel;
     private javax.swing.JMenuItem saveWindowMenuItem;
     private javax.swing.JMenuItem startLoggingMenuItem;
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration                   
 
 }

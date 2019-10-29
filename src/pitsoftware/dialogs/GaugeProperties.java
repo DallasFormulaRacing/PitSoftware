@@ -408,7 +408,7 @@ public class GaugeProperties extends javax.swing.JDialog {
 
     private void heightFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_heightFieldFocusLost
         if(heightField.getText().isEmpty())
-            new MessageBox("Enter a size.\nDefault size is 200.\nRadialGauge at Bottom is 100 for reference.").setVisible(true);
+            new MessageBox(this, "Enter a size.\nDefault size is 200.\nRadialGauge at Bottom is 100 for reference.", true).setVisible(true);
 
         else {
             try {
@@ -416,9 +416,9 @@ public class GaugeProperties extends javax.swing.JDialog {
                 attemptParse = Integer.parseInt(heightField.getText());
                 if(attemptParse == 0)
                     //new MessageBox("Nice try.\nPlease give it a size.").setVisible(true);
-                    new MessageBox(this, "Nice try.\\nPlease give it a size.", true);
+                    new MessageBox(this, "Nice try.\\nPlease give it a size.", true).setVisible(true);
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                new MessageBox(this, "Does that look like a fucking number to you?\nEnter a real number.", true).setVisible(true);
                 heightField.requestFocus();
 
             }
@@ -652,15 +652,15 @@ public class GaugeProperties extends javax.swing.JDialog {
 
     private void widthFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_widthFieldFocusLost
          if(widthField.getText().isEmpty())
-            new MessageBox("Enter a size.\nDefault size is 200.\nRadialGauge at Bottom is 100 for reference.").setVisible(true);
+            new MessageBox(this, "Enter a size.\nDefault size is 200.\nRadialGauge at Bottom is 100 for reference.", true).setVisible(true);
         else {
             try {
                 int attemptParse;
                 attemptParse = Integer.parseInt(widthField.getText());
                 if(attemptParse == 0)
-                    new MessageBox("Nice try.\nPlease give it a size.").setVisible(true);
+                    new MessageBox(this, "Nice try.\nPlease give it a size.", true).setVisible(true);
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                new MessageBox(this, "Does that look like a fucking number to you?\nEnter a real number.", true).setVisible(true);
                 widthField.requestFocus();
             }
         }

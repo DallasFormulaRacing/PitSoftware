@@ -146,13 +146,13 @@ public class Logger {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException ex) {
-                        java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                        java.util.logging.Logger.getLogger(Logger.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 } else {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ex) {
-                        java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                        java.util.logging.Logger.getLogger(Logger.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }

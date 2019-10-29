@@ -24,6 +24,8 @@ public class MessageBox extends javax.swing.JDialog {
         //Sets textArea to string
         
         messageArea.setText(text);
+        setVisible(true);
+
     }
 
     public MessageBox( java.awt.Dialog parent, String text, boolean modal){
