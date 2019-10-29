@@ -28,7 +28,7 @@ import pitsoftware.ScaledRadial;
  */
 public class CustomizeGaugeDialog extends javax.swing.JDialog {
 
-    ScaledRadial gauge;
+    AbstractGauge gauge;
     Dimension oldSize;
     /**
      * Creates new form CustomizeGaugeDialog

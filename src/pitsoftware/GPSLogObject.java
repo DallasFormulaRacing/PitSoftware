@@ -18,7 +18,7 @@ public class GPSLogObject extends LogObject {
         this.TAG = TAG;
         this.lat = lat;
         this.longi = longi;
-        this.time = System.currentTimeMillis() - MainWindow.logStartTime;
+        this.time = System.currentTimeMillis() - GaugesWindowSerial.logStartTime;
     }
 
     public double getLat() {
