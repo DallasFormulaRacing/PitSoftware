@@ -86,7 +86,8 @@ public class GaugeProperties extends javax.swing.JDialog {
         //Set fields in the window to the values that are stored in the gauge
         titleField.setText(gauge.getTitle());
         unitField.setText(gauge.getUnitString());
-        sizeField.setText("" + (int)gauge.getSize().getWidth());
+        heightField.setText("" + (int)gauge.getSize().getHeight());
+        widthField.setText("" + (int)gauge.getSize().getWidth());
         minField.setText("" + gauge.getMinValue());
         maxField.setText("" + gauge.getMaxValue());
         warningField.setText(""+ gauge.getThreshold());
@@ -100,6 +101,8 @@ public class GaugeProperties extends javax.swing.JDialog {
         
         if(gauge instanceof ScaledRadial)
         {
+            widthField.setVisible(false);
+            jLabel11.setVisible(false);
             scaleField.setText(""+((ScaledRadial) gauge).getScale());
             if( !((ScaledRadial) gauge).getTag().equals(""))
                 tagList.setSelectedValue(((ScaledRadial) gauge).getTag(), true);
@@ -110,7 +113,7 @@ public class GaugeProperties extends javax.swing.JDialog {
             if( !((ScaledLinear) gauge).getTag().equals("") )
                 tagList.setSelectedValue(((ScaledLinear) gauge).getTag(), true);
             if(gauge.getWidth() < gauge.getHeight())
-                sizeField.setText("" + (int)gauge.getSize().getWidth());
+                widthField.setText("" + (int)gauge.getSize().getWidth());
         }
         
         
@@ -129,7 +132,7 @@ public class GaugeProperties extends javax.swing.JDialog {
         titleField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         unitField = new javax.swing.JTextField();
-        sizeField = new javax.swing.JTextField();
+        heightField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         scaleField = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
@@ -150,6 +153,8 @@ public class GaugeProperties extends javax.swing.JDialog {
         tagList = new javax.swing.JList<>();
         jLabel6 = new javax.swing.JLabel();
         deleteButton = new javax.swing.JButton();
+        widthField = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -161,15 +166,15 @@ public class GaugeProperties extends javax.swing.JDialog {
 
         unitField.setToolTipText("");
 
-        sizeField.setText("200");
-        sizeField.setToolTipText("");
-        sizeField.addFocusListener(new java.awt.event.FocusAdapter() {
+        heightField.setText("200");
+        heightField.setToolTipText("");
+        heightField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
-                sizeFieldFocusLost(evt);
+                heightFieldFocusLost(evt);
             }
         });
 
-        jLabel3.setText("Size:  ");
+        jLabel3.setText("Height:  ");
 
         scaleField.setText("1");
         scaleField.setToolTipText("");
@@ -263,6 +268,16 @@ public class GaugeProperties extends javax.swing.JDialog {
             }
         });
 
+        widthField.setText("200");
+        widthField.setToolTipText("");
+        widthField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                widthFieldFocusLost(evt);
+            }
+        });
+
+        jLabel11.setText("Width:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -271,50 +286,57 @@ public class GaugeProperties extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel5))
-                                .addGap(23, 23, 23)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(unitField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(sizeField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(1, 1, 1))
-                                    .addComponent(scaleField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addGap(1, 1, 1)
-                                        .addComponent(minField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(14, 14, 14)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel9)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(maxField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jLabel6)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel7)
-                                .addGap(13, 13, 13)
-                                .addComponent(warningField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(36, 36, 36)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(invertThresholdCheckBox)
-                                    .addComponent(redlineMaxField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel8)
-                                .addGap(18, 18, 18)
-                                .addComponent(redlineMinField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel10)
-                                .addGap(112, 112, 112)))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(182, 182, 182)
+                                .addComponent(redlineMaxField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel7)
+                                        .addGap(177, 177, 177)
+                                        .addComponent(invertThresholdCheckBox))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel1)
+                                            .addComponent(jLabel2)
+                                            .addComponent(jLabel3)
+                                            .addComponent(jLabel4)
+                                            .addComponent(jLabel5))
+                                        .addGap(23, 23, 23)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addComponent(unitField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addComponent(heightField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGap(1, 1, 1))
+                                            .addComponent(scaleField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                                .addGap(1, 1, 1)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(warningField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addComponent(minField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addComponent(redlineMinField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(11, 11, 11)
+                                                .addComponent(jLabel11)
+                                                .addGap(1, 1, 1)
+                                                .addComponent(widthField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGroup(layout.createSequentialGroup()
+                                                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addGap(18, 18, 18)
+                                                    .addComponent(maxField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel6)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(deleteButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(cancelButton)
@@ -325,21 +347,29 @@ public class GaugeProperties extends javax.swing.JDialog {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(15, 15, 15)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel6)
+                                .addGap(155, 155, 155))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(titleField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel6))
+                            .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(unitField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(sizeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3))
+                            .addComponent(heightField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3)
+                            .addComponent(widthField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel11))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(scaleField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -354,47 +384,46 @@ public class GaugeProperties extends javax.swing.JDialog {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(warningField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel7)
-                            .addComponent(invertThresholdCheckBox))
+                            .addComponent(invertThresholdCheckBox))))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(redlineMinField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel8)
-                            .addComponent(redlineMaxField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel10)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(jScrollPane1)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(createButton)
-                    .addComponent(cancelButton)
-                    .addComponent(deleteButton))
-                .addContainerGap())
+                            .addComponent(jLabel10)
+                            .addComponent(redlineMaxField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(39, 39, 39)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(createButton)
+                            .addComponent(cancelButton)
+                            .addComponent(deleteButton))
+                        .addContainerGap())))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void sizeFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_sizeFieldFocusLost
-        if(sizeField.getText().isEmpty())
-            //new MessageBox("Enter a size.\nDefault size is 200.\nRadialGauge at Bottom is 100 for reference.").setVisible(true);
-            new MessageBox(this, "Enter a size.\\nDefault size is 200.\\nRadialGauge at Bottom is 100 for reference.", true);
+    private void heightFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_heightFieldFocusLost
+        if(heightField.getText().isEmpty())
+            new MessageBox("Enter a size.\nDefault size is 200.\nRadialGauge at Bottom is 100 for reference.").setVisible(true);
 
         else {
             try {
                 int attemptParse;
-                attemptParse = Integer.parseInt(sizeField.getText());
+                attemptParse = Integer.parseInt(heightField.getText());
                 if(attemptParse == 0)
                     //new MessageBox("Nice try.\nPlease give it a size.").setVisible(true);
                     new MessageBox(this, "Nice try.\\nPlease give it a size.", true);
             } catch(NumberFormatException e) {
-                //new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
-                new MessageBox(this, "Does that look like a fucking number to you?\nEnter a real number.", true);
-                
-                sizeField.requestFocus();
+                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                heightField.requestFocus();
+
             }
         }
-    }//GEN-LAST:event_sizeFieldFocusLost
+    }//GEN-LAST:event_heightFieldFocusLost
 
     private void scaleFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_scaleFieldFocusLost
         if(scaleField.getText().isEmpty())
@@ -494,7 +523,7 @@ public class GaugeProperties extends javax.swing.JDialog {
         //get attributes
         String title = titleField.getText();
         String units = unitField.getText();
-        Dimension size = new Dimension(Integer.parseInt(sizeField.getText()), Integer.parseInt(sizeField.getText()));
+        Dimension size = new Dimension(Integer.parseInt(widthField.getText()), Integer.parseInt(heightField.getText()));
         double scale = Double.parseDouble(scaleField.getText());
         double min;
         if(minField.getText().isEmpty())
@@ -561,22 +590,23 @@ public class GaugeProperties extends javax.swing.JDialog {
         gauge.setTitle(title);
         gauge.setUnitString(units);
         if(gauge instanceof ScaledRadial) {
-            gauge.setSize(size);
-            gauge.getParent().setSize(size);
+            gauge.setSize(size.height,size.height);
+            gauge.getParent().setSize(gauge.getSize());
             ((ScaledRadial) gauge).setScale(scale);
             ((ScaledRadial) gauge).setTag(TAG[0]);
         } else if (gauge instanceof ScaledLinear) {
             ((ScaledLinear) gauge).setScale(scale);
             ((ScaledLinear) gauge).setTag(TAG[0]);
-            if(gauge.getWidth() > gauge.getHeight()) {
-                gauge.setSize(size.width, 100);
-                gauge.getParent().setPreferredSize(gauge.getSize());
-                gauge.getParent().setSize(gauge.getSize());
-            } else {
+            
+            gauge.setSize(size.width, size.height);
+            gauge.getParent().setPreferredSize(gauge.getSize());
+            gauge.getParent().setSize(gauge.getSize());
+        } else {
                 gauge.setSize(100, size.height);
                 gauge.getParent().setPreferredSize(gauge.getSize());
                 gauge.getParent().setSize(gauge.getSize());
-            }
+
+            
         }
         gauge.setMinValue(min);
         if(max != 100)
@@ -619,6 +649,22 @@ public class GaugeProperties extends javax.swing.JDialog {
         frame.setCancel(true);
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void widthFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_widthFieldFocusLost
+         if(widthField.getText().isEmpty())
+            new MessageBox("Enter a size.\nDefault size is 200.\nRadialGauge at Bottom is 100 for reference.").setVisible(true);
+        else {
+            try {
+                int attemptParse;
+                attemptParse = Integer.parseInt(widthField.getText());
+                if(attemptParse == 0)
+                    new MessageBox("Nice try.\nPlease give it a size.").setVisible(true);
+            } catch(NumberFormatException e) {
+                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+                widthField.requestFocus();
+            }
+        }
+    }//GEN-LAST:event_widthFieldFocusLost
 
     /**
      * @param args the command line arguments
@@ -666,9 +712,11 @@ public class GaugeProperties extends javax.swing.JDialog {
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton createButton;
     private javax.swing.JButton deleteButton;
+    private javax.swing.JTextField heightField;
     private javax.swing.JCheckBox invertThresholdCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -683,10 +731,10 @@ public class GaugeProperties extends javax.swing.JDialog {
     private javax.swing.JTextField redlineMaxField;
     private javax.swing.JTextField redlineMinField;
     private javax.swing.JTextField scaleField;
-    private javax.swing.JTextField sizeField;
     private javax.swing.JList<String> tagList;
     private javax.swing.JTextField titleField;
     private javax.swing.JTextField unitField;
     private javax.swing.JTextField warningField;
+    private javax.swing.JTextField widthField;
     // End of variables declaration//GEN-END:variables
 }

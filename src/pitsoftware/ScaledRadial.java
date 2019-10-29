@@ -12,7 +12,7 @@ import eu.hansolo.steelseries.gauges.Radial;
  * This makes sure that the LCD reads out the proper value, while keeping the gauge correct as well
  * @author aribdhuka
  */
-public class ScaledRadial extends Radial {
+public class ScaledRadial extends Radial implements Scaled {
     
     //the scale for this gauge
     //so if the gauge represents 1000 per tick, the scale is 1000
