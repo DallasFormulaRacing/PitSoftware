@@ -3,24 +3,38 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package pitsoftware;
 
-public class MessageBox extends javax.swing.JFrame {
+public class MessageBox extends javax.swing.JDialog {
 
     /**
      * Creates new form MessageBox
      */
-    public MessageBox() {
+    public MessageBox(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
         initComponents();
     }
     
     //Mostly used to display specific error message
-    public MessageBox(String text){
+    public MessageBox( java.awt.Frame parent, String text, boolean modal){
+        super(parent, modal);
+
         initComponents();
         //Sets textArea to string
+        
         messageArea.setText(text);
     }
 
+    public MessageBox( java.awt.Dialog parent, String text, boolean modal){
+       super(parent, modal);
+
+        initComponents();
+        //Sets textArea to string
+        
+        messageArea.setText(text);
+        setVisible(true);
+    }    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -113,8 +127,18 @@ public class MessageBox extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MessageBox().setVisible(true);
-                     
+               // new MessageBox().setVisible(true);
+            
+            
+    
+                MessageBox dialog = new MessageBox(new javax.swing.JFrame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                         System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
             }
         });
         

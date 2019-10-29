@@ -61,7 +61,7 @@ public class GaugesWindow extends javax.swing.JFrame {
 
             //if reader failed
             if(reader == null) {
-                new MessageBox("Couldn't find file!").setVisible(true);
+                new MessageBox(new javax.swing.JFrame(), "Couldn't find file!", true);
                 return;
             }
 
@@ -523,7 +523,7 @@ public class GaugesWindow extends javax.swing.JFrame {
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         if(pyFilepath.isEmpty()) {
-            new MessageBox("Please select a python file from File>Find Python File.").setVisible(true);
+            new MessageBox(new javax.swing.JFrame(), "Please select a python file from File>Find Python File.", true);
         }
         else {
             isRunning = !isRunning;
@@ -536,10 +536,10 @@ public class GaugesWindow extends javax.swing.JFrame {
                     Thread.sleep(2000);
                 } catch (IOException ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                    new MessageBox("Error running python file").setVisible(true);
+                    new MessageBox(new javax.swing.JFrame(), "Error running python file", true);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                    new MessageBox("Interrupted Exception").setVisible(true);
+                    new MessageBox(new javax.swing.JFrame(), "Interrupted Exception", true);
                 }
                 startButton.setText("STOP THIS BITCH!");
                 logStartTime = System.currentTimeMillis();
