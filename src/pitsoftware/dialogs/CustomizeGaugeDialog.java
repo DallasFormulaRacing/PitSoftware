@@ -28,7 +28,7 @@ import pitsoftware.ScaledRadial;
  */
 public class CustomizeGaugeDialog extends javax.swing.JDialog {
 
-    ScaledRadial gauge;
+    AbstractGauge gauge;
     Dimension oldSize;
     /**
      * Creates new form CustomizeGaugeDialog
@@ -72,7 +72,7 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         frameDesignsList.setSelectedIndex(gauge.getFrameDesign().ordinal());
         backgroundsList.setSelectedIndex(gauge.getBackgroundColor().ordinal());
         ledsList.setSelectedIndex(gauge.getLedColor().ordinal());
-        pointerList.setSelectedIndex(gauge.getPointerColor().ordinal());
+        pointerList.setSelectedIndex(gauge.getValueColor().ordinal());
         lcdList.setSelectedIndex(gauge.getLcdColor().ordinal());
         
     }
@@ -124,7 +124,10 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         pointerList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                gauge.setPointerColor(ColorDef.valueOf(((JList)e.getSource()).getSelectedValue()+""));
+                if(gauge instanceof ScaledRadial)
+                    ((ScaledRadial)gauge).setPointerColor(ColorDef.valueOf(((JList)e.getSource()).getSelectedValue()+""));
+                else if(gauge instanceof ScaledLinear)
+                    ((ScaledLinear)gauge).setValueColor(ColorDef.valueOf(((JList)e.getSource()).getSelectedValue()+""));
             }
         });
         
@@ -136,7 +139,10 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         lcdList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                gauge.setLcdColor(LcdColor.valueOf(((JList)e.getSource()).getSelectedValue()+""));
+               if(gauge instanceof ScaledRadial)
+                    ((ScaledRadial)gauge).setLcdColor(LcdColor.valueOf(((JList)e.getSource()).getSelectedValue()+""));
+               if(gauge instanceof ScaledLinear)
+                    ((ScaledLinear)gauge).setLcdColor(LcdColor.valueOf(((JList)e.getSource()).getSelectedValue()+""));
             }
         });
     }
