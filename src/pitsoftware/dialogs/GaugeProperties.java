@@ -414,9 +414,12 @@ public class GaugeProperties extends javax.swing.JDialog {
                 int attemptParse;
                 attemptParse = Integer.parseInt(heightField.getText());
                 if(attemptParse == 0)
-                    new MessageBox("Nice try.\nPlease give it a size.").setVisible(true);
+                {
+                  new MessageBox("Nice try.\nPlease give it a size.");
+                }
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+               new MessageBox("Does that look like a fucking number to you?\nEnter a real number.").setVisible(true);
+               
                 heightField.requestFocus();
             }
         }

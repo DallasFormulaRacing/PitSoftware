@@ -249,8 +249,9 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 if(editing) {
                     JPanel panel = (JPanel) evt.getSource();
                     Point newLocation = evt.getLocationOnScreen();
-                    newLocation.x = newLocation.x + panel.getParent().getLocation().x - 50;
-                    newLocation.y = newLocation.y + panel.getParent().getLocation().y - 100;
+                    CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+                    newLocation.x = newLocation.x - frame.getLocation().x - 50;
+                    newLocation.y = newLocation.y - frame.getLocation().y - 100;
                     panel.setLocation(newLocation);
                     panel.repaint();
                 }
@@ -298,42 +299,42 @@ public class CustomizableWindow extends javax.swing.JFrame {
     
     public void updateGauge(java.awt.event.MouseEvent evt, AbstractGauge gauge, JPanel newPanel, String[] tag)
     {
-                        /*
-                            Store the previous tag so we can remove it from
-                        the gauges treemap later on
-                        */
-                        String oldTag = tag[0];
-                        /*
-                            Remove at the start incase they decide to delete the gauge
-                        as it makes it a lot easier to deal with
-                        */
-                        gauges.remove(oldTag, gauge);
-                        
-                        JPanel panel = (JPanel)evt.getSource();
-                        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
-                        Component[] components = panel.getComponents();
-                        GaugeProperties gp = new GaugeProperties(frame, true, (AbstractGauge)components[0], tag);
-                        gp.setVisible(true);
-                        //Don't prompt the user for gauge customizations if gauge is deleted
-                        if(gauge instanceof ScaledRadial && cancel==false && gauge.isDisplayable())
-                        {
-                            CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(frame, true, (ScaledRadial)gauge);
-                            cgd.setVisible(true);
-                            newPanel.add(gauge);
-                            if(oldTag.equals(tag[0]))
-                                gauges.put(tag[0], gauge);
-                            else
-                            {
-                               gauges.remove(oldTag, gauge);
-                               gauges.put(tag[0], gauge);
-                            }
-                         }
-                        //If the gauge was canceled but not deleted add gauge back to gauges
-                        else if(cancel == true && gauge.isDisplayable())
-                            gauges.put(tag[0], gauge);
-                        
-                        cancel = false;
-                        repaint();
+        /*
+            Store the previous tag so we can remove it from
+        the gauges treemap later on
+        */
+        String oldTag = tag[0];
+        /*
+            Remove at the start incase they decide to delete the gauge
+        as it makes it a lot easier to deal with
+        */
+        gauges.remove(oldTag, gauge);
+
+        JPanel panel = (JPanel)evt.getSource();
+        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+        Component[] components = panel.getComponents();
+        GaugeProperties gp = new GaugeProperties(frame, true, (AbstractGauge)components[0], tag);
+        gp.setVisible(true);
+        //Don't prompt the user for gauge customizations if gauge is deleted
+        if(gauge instanceof ScaledRadial && cancel==false && gauge.isDisplayable())
+        {
+            CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(frame, true, (ScaledRadial)gauge);
+            cgd.setVisible(true);
+            newPanel.add(gauge);
+            if(oldTag.equals(tag[0]))
+                gauges.put(tag[0], gauge);
+            else
+            {
+               gauges.remove(oldTag, gauge);
+               gauges.put(tag[0], gauge);
+            }
+         }
+        //If the gauge was canceled but not deleted add gauge back to gauges
+        else if(cancel == true && gauge.isDisplayable())
+            gauges.put(tag[0], gauge);
+
+        cancel = false;
+        repaint();
     }
     
     private void saveWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveWindowMenuItemActionPerformed
@@ -380,8 +381,9 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 if(editing) {
                     JPanel panel = (JPanel) evt.getSource();
                     Point newLocation = evt.getLocationOnScreen();
-                    newLocation.x = newLocation.x + panel.getParent().getLocation().x - 50;
-                    newLocation.y = newLocation.y + panel.getParent().getLocation().y - 100;
+                    CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+                    newLocation.x = newLocation.x - frame.getLocation().x - 50;
+                    newLocation.y = newLocation.y - frame.getLocation().y - 100;
                     panel.setLocation(newLocation);
                     panel.repaint();
                 }
@@ -433,7 +435,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
     private void startLoggingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLoggingMenuItemActionPerformed
         // TODO add your handling code here:
         
-        logger = new Logger(gauges);
+//        logger = new Logger(gauges);
     }//GEN-LAST:event_startLoggingMenuItemActionPerformed
 
     private void generateEditPanel() {
