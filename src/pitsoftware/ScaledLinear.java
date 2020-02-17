@@ -11,7 +11,7 @@ import eu.hansolo.steelseries.gauges.Linear;
  *
  * @author aribdhuka
  */
-public class ScaledLinear extends Linear {
+public class ScaledLinear extends Linear implements Scaled {
     
     private double scale;
     private String tag;

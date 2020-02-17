@@ -5,6 +5,7 @@
  */
 package pitsoftware.dialogs;
 
+import eu.hansolo.steelseries.gauges.AbstractGauge;
 import eu.hansolo.steelseries.tools.BackgroundColor;
 import eu.hansolo.steelseries.tools.ColorDef;
 import eu.hansolo.steelseries.tools.FrameDesign;
@@ -12,11 +13,13 @@ import eu.hansolo.steelseries.tools.LcdColor;
 import eu.hansolo.steelseries.tools.LedColor;
 import eu.hansolo.steelseries.tools.LedType;
 import eu.hansolo.steelseries.tools.PointerType;
+import java.awt.Dimension;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jfree.chart.needle.PointerNeedle;
 import org.jfree.chart.plot.dial.DialPointer;
+import pitsoftware.ScaledLinear;
 import pitsoftware.ScaledRadial;
 
 /**
@@ -25,7 +28,8 @@ import pitsoftware.ScaledRadial;
  */
 public class CustomizeGaugeDialog extends javax.swing.JDialog {
 
-    ScaledRadial gauge;
+    AbstractGauge gauge;
+    Dimension oldSize;
     /**
      * Creates new form CustomizeGaugeDialog
      */
@@ -41,6 +45,8 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.gauge = gauge;
+        oldSize = gauge.getSize();
+        gauge.setSize(new Dimension(200, 200));
         setupLists();
         displayGauge();
         
@@ -49,6 +55,24 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         backgroundsList.setSelectedIndex(gauge.getBackgroundColor().ordinal());
         ledsList.setSelectedIndex(gauge.getLedColor().ordinal());
         pointerList.setSelectedIndex(gauge.getPointerColor().ordinal());
+        lcdList.setSelectedIndex(gauge.getLcdColor().ordinal());
+        
+    }
+    
+    public CustomizeGaugeDialog(java.awt.Frame parent, boolean modal, ScaledLinear gauge) {
+        super(parent, modal);
+        initComponents();
+        this.gauge = gauge;
+        oldSize = gauge.getSize();
+        gauge.setSize(new Dimension(200, 200));
+        setupLists();
+        displayGauge();
+        
+        //Show the Gauge's current customizations as selected
+        frameDesignsList.setSelectedIndex(gauge.getFrameDesign().ordinal());
+        backgroundsList.setSelectedIndex(gauge.getBackgroundColor().ordinal());
+        ledsList.setSelectedIndex(gauge.getLedColor().ordinal());
+        pointerList.setSelectedIndex(gauge.getValueColor().ordinal());
         lcdList.setSelectedIndex(gauge.getLcdColor().ordinal());
         
     }
@@ -100,7 +124,10 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         pointerList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                gauge.setPointerColor(ColorDef.valueOf(((JList)e.getSource()).getSelectedValue()+""));
+                if(gauge instanceof ScaledRadial)
+                    ((ScaledRadial)gauge).setPointerColor(ColorDef.valueOf(((JList)e.getSource()).getSelectedValue()+""));
+                else if(gauge instanceof ScaledLinear)
+                    ((ScaledLinear)gauge).setValueColor(ColorDef.valueOf(((JList)e.getSource()).getSelectedValue()+""));
             }
         });
         
@@ -112,7 +139,10 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
         lcdList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                gauge.setLcdColor(LcdColor.valueOf(((JList)e.getSource()).getSelectedValue()+""));
+               if(gauge instanceof ScaledRadial)
+                    ((ScaledRadial)gauge).setLcdColor(LcdColor.valueOf(((JList)e.getSource()).getSelectedValue()+""));
+               if(gauge instanceof ScaledLinear)
+                    ((ScaledLinear)gauge).setLcdColor(LcdColor.valueOf(((JList)e.getSource()).getSelectedValue()+""));
             }
         });
     }
@@ -301,10 +331,12 @@ public class CustomizeGaugeDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
+        gauge.setSize(oldSize);
         this.dispose();
     }//GEN-LAST:event_applyButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        gauge.setSize(oldSize);
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 

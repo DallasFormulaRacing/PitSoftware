@@ -26,7 +26,7 @@ import pitsoftware.dialogs.GaugeProperties;
 public class CustomizableWindow extends javax.swing.JFrame {
 
     //holds all the gauges
-    TreeMap<String, Object> gauges;
+    TreeMap<String, AbstractGauge> gauges;
     //holds if the form is being edited
     boolean editing;
     //holds if a radial is being added
@@ -66,6 +66,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jMenuItem1 = new javax.swing.JMenuItem();
         editPanel = new javax.swing.JPanel();
         radial_editPanel = new javax.swing.JPanel();
         linear_editPanel = new javax.swing.JPanel();
@@ -74,8 +75,12 @@ public class CustomizableWindow extends javax.swing.JFrame {
         fileMenu = new javax.swing.JMenu();
         openWindowMenuItem = new javax.swing.JMenuItem();
         saveWindowMenuItem = new javax.swing.JMenuItem();
+        startLoggingMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         editPanelMenuItem = new javax.swing.JMenuItem();
+        portsMenu = new javax.swing.JMenu();
+
+        jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setSize(new java.awt.Dimension(1375, 800));
@@ -121,11 +126,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
 
         linearVert_editPanel.setBackground(new java.awt.Color(255, 255, 255));
         linearVert_editPanel.setPreferredSize(new java.awt.Dimension(99, 100));
-        linearVert_editPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                linearVert_editPanelMouseClicked(evt);
-            }
-        });
 
         javax.swing.GroupLayout linearVert_editPanelLayout = new javax.swing.GroupLayout(linearVert_editPanel);
         linearVert_editPanel.setLayout(linearVert_editPanelLayout);
@@ -179,6 +179,15 @@ public class CustomizableWindow extends javax.swing.JFrame {
         });
         fileMenu.add(saveWindowMenuItem);
 
+        startLoggingMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.CTRL_MASK));
+        startLoggingMenuItem.setText("Start This Bitch!");
+        startLoggingMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startLoggingMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(startLoggingMenuItem);
+
         jMenuBar1.add(fileMenu);
 
         editMenu.setText("Edit");
@@ -193,6 +202,9 @@ public class CustomizableWindow extends javax.swing.JFrame {
         editMenu.add(editPanelMenuItem);
 
         jMenuBar1.add(editMenu);
+
+        portsMenu.setText("Ports");
+        jMenuBar1.add(portsMenu);
 
         setJMenuBar(jMenuBar1);
 
@@ -237,8 +249,9 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 if(editing) {
                     JPanel panel = (JPanel) evt.getSource();
                     Point newLocation = evt.getLocationOnScreen();
-                    newLocation.x = newLocation.x + panel.getParent().getLocation().x - 50;
-                    newLocation.y = newLocation.y + panel.getParent().getLocation().y - 100;
+                    CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+                    newLocation.x = newLocation.x - frame.getLocation().x - 50;
+                    newLocation.y = newLocation.y - frame.getLocation().y - 100;
                     panel.setLocation(newLocation);
                     panel.repaint();
                 }
@@ -286,42 +299,42 @@ public class CustomizableWindow extends javax.swing.JFrame {
     
     public void updateGauge(java.awt.event.MouseEvent evt, AbstractGauge gauge, JPanel newPanel, String[] tag)
     {
-                        /*
-                            Store the previous tag so we can remove it from
-                        the gauges treemap later on
-                        */
-                        String oldTag = tag[0];
-                        /*
-                            Remove at the start incase they decide to delete the gauge
-                        as it makes it a lot easier to deal with
-                        */
-                        gauges.remove(oldTag, gauge);
-                        
-                        JPanel panel = (JPanel)evt.getSource();
-                        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
-                        Component[] components = panel.getComponents();
-                        GaugeProperties gp = new GaugeProperties(frame, true, (AbstractGauge)components[0], tag);
-                        gp.setVisible(true);
-                        //Don't prompt the user for gauge customizations if gauge is deleted
-                        if(gauge instanceof ScaledRadial && cancel==false && gauge.isDisplayable())
-                        {
-                            CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(frame, true, (ScaledRadial)gauge);
-                            cgd.setVisible(true);
-                            newPanel.add(gauge);
-                            if(oldTag.equals(tag[0]))
-                                gauges.put(tag[0], gauge);
-                            else
-                            {
-                               gauges.remove(oldTag, gauge);
-                               gauges.put(tag[0], gauge);
-                            }
-                         }
-                        //If the gauge was canceled but not deleted add gauge back to gauges
-                        else if(cancel == true && gauge.isDisplayable())
-                            gauges.put(tag[0], gauge);
-                        
-                        cancel = false;
-                        repaint();
+        /*
+            Store the previous tag so we can remove it from
+        the gauges treemap later on
+        */
+        String oldTag = tag[0];
+        /*
+            Remove at the start incase they decide to delete the gauge
+        as it makes it a lot easier to deal with
+        */
+        gauges.remove(oldTag, gauge);
+
+        JPanel panel = (JPanel)evt.getSource();
+        CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+        Component[] components = panel.getComponents();
+        GaugeProperties gp = new GaugeProperties(frame, true, (AbstractGauge)components[0], tag);
+        gp.setVisible(true);
+        //Don't prompt the user for gauge customizations if gauge is deleted
+        if(gauge instanceof ScaledRadial && cancel==false && gauge.isDisplayable())
+        {
+            CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(frame, true, (ScaledRadial)gauge);
+            cgd.setVisible(true);
+            newPanel.add(gauge);
+            if(oldTag.equals(tag[0]))
+                gauges.put(tag[0], gauge);
+            else
+            {
+               gauges.remove(oldTag, gauge);
+               gauges.put(tag[0], gauge);
+            }
+         }
+        //If the gauge was canceled but not deleted add gauge back to gauges
+        else if(cancel == true && gauge.isDisplayable())
+            gauges.put(tag[0], gauge);
+
+        cancel = false;
+        repaint();
     }
     
     private void saveWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveWindowMenuItemActionPerformed
@@ -331,7 +344,7 @@ public class CustomizableWindow extends javax.swing.JFrame {
         //for each gauge
         for(String key : logger.gauges.keySet()) {
             //get the gauge
-            AbstractGauge o = logger.gauges.get(key);
+            AbstractGauge o = (AbstractGauge) logger.gauges.get(key);
             //if its a Radial
             if(o instanceof ScaledRadial) {
                 //create its JSONObject within the json and put in the json file
@@ -357,10 +370,6 @@ public class CustomizableWindow extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_saveWindowMenuItemActionPerformed
 
-    private void linearVert_editPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linearVert_editPanelMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_linearVert_editPanelMouseClicked
-
     private void linear_editPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linear_editPanelMouseClicked
         //Create new panel that can be moved
         //ask for properties: Title, Unit, generate TAG, size, scale, min, max, threshold, invertthreshhold, trackstart, trackstop
@@ -372,8 +381,9 @@ public class CustomizableWindow extends javax.swing.JFrame {
                 if(editing) {
                     JPanel panel = (JPanel) evt.getSource();
                     Point newLocation = evt.getLocationOnScreen();
-                    newLocation.x = newLocation.x + panel.getParent().getLocation().x - 50;
-                    newLocation.y = newLocation.y + panel.getParent().getLocation().y - 100;
+                    CustomizableWindow frame = (CustomizableWindow) SwingUtilities.getWindowAncestor(panel);
+                    newLocation.x = newLocation.x - frame.getLocation().x - 50;
+                    newLocation.y = newLocation.y - frame.getLocation().y - 100;
                     panel.setLocation(newLocation);
                     panel.repaint();
                 }
@@ -402,8 +412,8 @@ public class CustomizableWindow extends javax.swing.JFrame {
         });
         
         //TODO: NEW custom dialog
-        // CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
-        //cgd.setVisible(true);
+        CustomizeGaugeDialog cgd = new CustomizeGaugeDialog(this, true, gauge);
+        cgd.setVisible(true);
         if(cancel == false)
         {
             newPanel.add(gauge);
@@ -422,10 +432,15 @@ public class CustomizableWindow extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_openWindowMenuItemActionPerformed
 
+    private void startLoggingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLoggingMenuItemActionPerformed
+        // TODO add your handling code here:
+        
+//        logger = new Logger(gauges);
+    }//GEN-LAST:event_startLoggingMenuItemActionPerformed
+
     private void generateEditPanel() {
-        createCircularGauge("Engine RPM", "RPMx1K", "RPM", new Dimension(100,100), 1000, 0, 14, 12, false, 10.5, 14, radial_editPanel).setValue(7);
-        createLinearGauge("BrakeFront", "PSIx1k", "PSI", new Dimension(200,100), 1, 0, 2, 1, false, 1, 2, linear_editPanel).setValue(.9);
-        createLinearGauge("BrakeRear", "PSIx1k", "PSI", new Dimension(99,100), 1, 0, 2, 1, false, 1, 2, linearVert_editPanel).setValue(.9);
+        createCircularGauge("Engine RPM", "RPMx1K", "", new Dimension(100,100), 1000, 0, 14, 12, false, 10.5, 14, radial_editPanel).setValue(7);
+        createLinearGauge("BrakeFront", "PSIx1k", "", new Dimension(200,100), 1, 0, 2, 1, false, 1, 2, linear_editPanel).setValue(.9);
     }
     
     //create with default scale
@@ -586,10 +601,13 @@ public class CustomizableWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem editPanelMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel linearVert_editPanel;
     private javax.swing.JPanel linear_editPanel;
     private javax.swing.JMenuItem openWindowMenuItem;
+    private javax.swing.JMenu portsMenu;
     private javax.swing.JPanel radial_editPanel;
     private javax.swing.JMenuItem saveWindowMenuItem;
+    private javax.swing.JMenuItem startLoggingMenuItem;
     // End of variables declaration//GEN-END:variables
 }

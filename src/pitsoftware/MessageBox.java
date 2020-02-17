@@ -5,13 +5,15 @@
  */
 package pitsoftware;
 
-public class MessageBox extends javax.swing.JFrame {
+public class MessageBox extends javax.swing.JDialog {
 
     /**
      * Creates new form MessageBox
      */
     public MessageBox() {
         initComponents();
+        this.setModal(true);
+        this.setAlwaysOnTop(true);
     }
     
     //Mostly used to display specific error message
@@ -19,6 +21,8 @@ public class MessageBox extends javax.swing.JFrame {
         initComponents();
         //Sets textArea to string
         messageArea.setText(text);
+        this.setModal(true);
+        this.setAlwaysOnTop(true);
     }
 
     /**
