@@ -49,6 +49,8 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
     //Thread that handles parsing hexstrings in the background
     Thread parseThread;
     long startTime;
+    int timeoutCount = 0;
+    int timeoutThreshold = 300; // desired number of seconds (15) divided by 50 milliseconds
     Runnable serialParser = new Runnable() {
         @Override
         public void run() {
@@ -74,6 +76,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                         Thread.sleep(50);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(GaugesWindowSerial.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    timeoutCount += 1;
+                    if (timeoutCount >= timeoutThreshold) {
+                        new MessageBox("No data received, check \nconfiguration!").setVisible(true);
+                        throw new RuntimeException("No data received for 15 seconds");
                     }
                 }
             }
