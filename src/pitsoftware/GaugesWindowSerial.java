@@ -80,6 +80,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                     timeoutCount += 1;
                     if (timeoutCount >= timeoutThreshold) {
                         new MessageBox("No data received, check \nconfiguration!").setVisible(true);
+                        timeoutCount = 0;
                         throw new RuntimeException("No data received for 15 seconds");
                     }
                 }
