@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="libs">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/comm-2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/SteelSeries-3.9.30.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/CategoricalHashTable-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/jfreesvg-2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/swtgraphics2d.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/jfreechart-1.0.19.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/junit-4.11.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/jssc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/hamcrest-core-1.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/jcommon-1.0.23.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/orsonpdf-1.6-eval.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/Toast-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/jfreechart-1.0.19-experimental.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/jfreechart-1.0.19-swt.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/servlet.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/radiance-trident-1.0.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/orsoncharts-1.4-eval-nofx.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/SteelSeries-3.9.30-javadoc.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

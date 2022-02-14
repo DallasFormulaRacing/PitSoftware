@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="lib1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/SteelSeries-3.9.30.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/jfreechart-1.0.19-swt.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/hamcrest-core-1.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/comm-2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/AbsoluteLayout.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/jcommon-1.0.23.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/orsonpdf-1.6-eval.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/jssc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/swtgraphics2d.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/junit-4.11.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/jfreesvg-2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/orsoncharts-1.4-eval-nofx.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/jfreechart-1.0.19.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/jfreechart-1.0.19-experimental.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/CategoricalHashTable-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/servlet.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/Toast-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/lib/radiance-trident-1.0.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

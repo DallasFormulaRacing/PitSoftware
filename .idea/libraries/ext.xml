@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="ext">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/cldrdata.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/sunpkcs11.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/nashorn.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/dnsns.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/zipfs.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/jfxrt.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/sunec.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/localedata.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/sunjce_provider.jar!/" />
+      <root url="jar://$PROJECT_DIR$/dist/bundles/PitSoftware/runtime/lib/ext/jaccess.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

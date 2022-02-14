@@ -77,12 +77,12 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
                     } catch (InterruptedException ex) {
                         Logger.getLogger(GaugesWindowSerial.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    timeoutCount += 1;
+                    /*timeoutCount += 1;
                     if (timeoutCount >= timeoutThreshold) {
                         new MessageBox("No data received, check \nconfiguration!").setVisible(true);
                         timeoutCount = 0;
                         throw new RuntimeException("No data received for 15 seconds");
-                    }
+                    }*/
                 }
             }
             
@@ -205,7 +205,7 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         String[] portList = SerialPortList.getPortNames();
         if(portList.length == 1) {
             serialPath = portList[0];
-            Toast.makeToast(this, "Selected: " + serialPath, Toast.DURATION_MEDIUM);
+            //Toast.makeToast(this, "Selected: " + serialPath, Toast.DURATION_MEDIUM);
         }
         for(String s : portList) {
             JMenuItem item = new JMenuItem(s);
@@ -848,11 +848,11 @@ public class GaugesWindowSerial extends javax.swing.JFrame {
         if(data.length() < 4)
             return;
         //if the length of the line is not the right size skip the value
-        if(!(data.substring(0, 4).equals("#005") || data.substring(0, 4).equals("#007")) && data.length() != 23) {
-            System.out.print("Invalid CAN String!--");
+        /*if(!(data.substring(0, 4).equals("#005") )) {//|| data.substring(0, 4).equals("#007")) && data.length() != 23) {
+            System.out.print("Invalid CAN String in Windowserial!--");
             System.out.println(data);
             return;
-        }
+        } */
         //get the identifier of the data value
         String identifier = data.substring(1,4);
         //switch on the identifier
