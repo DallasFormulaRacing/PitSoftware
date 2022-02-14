@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="PitSoftware">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/store/PitSoftware.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
